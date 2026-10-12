@@ -8,11 +8,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.sp
+import org.claudroide.app.core.design.TypeTokens
 
 public object CcType {
 
-    public val Inter: FontFamily = FontFamily.Default
-    public val JetBrainsMono: FontFamily = FontFamily.Monospace
+    /**
+     * The bundled families, not the platform defaults.
+     *
+     * These used to be [FontFamily.Default] and [FontFamily.Monospace], which
+     * meant the component library rendered in Roboto while the screens around
+     * it rendered in the bundled Inter -- two fonts on one screen, which the
+     * design spec forbids. Both families are declared once in [TypeTokens] so
+     * the weights and the licence attribution stay in a single place.
+     */
+    public val Inter: FontFamily = TypeTokens.InterFamily
+    public val JetBrainsMono: FontFamily = TypeTokens.MonoFamily
 
     private const val TABULAR = "tnum"
 
