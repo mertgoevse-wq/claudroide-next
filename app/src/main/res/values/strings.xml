@@ -52,4 +52,20 @@
     <string name="nav_drawer_no_recent">Keine kürzlichen Unterhaltungen</string>
     <string name="nav_drawer_docs">Dokumentation &amp; Shortcuts</string>
     <string name="nav_drawer_subscribed">Subscribed</string>
+
+    <!-- Attachment Bottom Sheet -->
+    <string name="chat_attachment_title">Context &amp; Attachment</string>
+    <string name="chat_attachment_close">Close</string>
+    <string name="chat_attachment_files_code">Files &amp; Code</string>
+    <string name="chat_attachment_files_code_desc">Attach source files, Gradle builds or logs</string>
+    <string name="chat_attachment_photos_docs">Photos &amp; Documents</string>
+    <string name="chat_attachment_photos_docs_desc">Screenshots from gallery or design exports</string>
+    <string name="chat_attachment_camera">Camera</string>
+    <string name="chat_attachment_camera_desc">Scan architecture sketch or screen directly</string>
+    <string name="chat_attachment_project_context">Project Context</string>
+    <string name="chat_attachment_project_context_desc">Link repository, module or Git branch</string>
+    <string name="chat_attachment_logcat">Insert Logcat</string>
+    <string name="chat_attachment_logcat_desc">Analyze crashlog, ANR trace or stacktrace</string>
+    <string name="chat_attachment_context_memory">Context memory: %1$s / %2$s tokens free</string>
+    <string name="chat_attachment_manage">Manage</string>
 </resources>

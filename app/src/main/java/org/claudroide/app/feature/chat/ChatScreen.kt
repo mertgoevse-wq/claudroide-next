@@ -107,7 +107,6 @@ fun ChatScreen(
     val effectiveError = s.error
 
     val listState = rememberLazyListState()
-    var showAttachmentSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -260,6 +259,18 @@ fun ChatScreen(
                 viewModel = viewModel,
             )
         }
+    }
+
+    if (s.showAttachmentSheet) {
+        AttachmentBottomSheet(
+            onDismissRequest = { viewModel?.onDismissAttachmentSheet() ?: onAttachmentClick() },
+            onOptionSelected = { option ->
+                // TODO: handle attachment option selection
+            },
+            onManageContextClick = {
+                // TODO: open context management
+            },
+        )
     }
 }
 

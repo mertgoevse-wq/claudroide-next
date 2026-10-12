@@ -268,7 +268,13 @@ class ChatViewModel @JvmOverloads constructor(
         "conv_${System.currentTimeMillis()}_${(0..999).random()}"
 
     fun onAttachmentClick() {
-        // TODO: Open attachment bottom sheet
+        _uiState.value = _uiState.value.copy(
+            showAttachmentSheet = !_uiState.value.showAttachmentSheet
+        )
+    }
+
+    fun onDismissAttachmentSheet() {
+        _uiState.value = _uiState.value.copy(showAttachmentSheet = false)
     }
 
     fun onModeClick() {
@@ -293,7 +299,8 @@ data class ChatUiState(
     val streamState: StreamState = StreamState.IDLE,
     val conversationId: String = generateConversationId(),
     val error: String? = null,
-    val lastUsage: TokenUsage? = null
+    val lastUsage: TokenUsage? = null,
+    val showAttachmentSheet: Boolean = false
 )
 
 data class TokenUsage(

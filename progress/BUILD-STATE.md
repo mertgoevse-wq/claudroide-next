@@ -700,3 +700,43 @@ Commit `29dcc83` auf `origin/main` gepusht. Repository war zum Push-Zeitpunkt **
 ### 7. Nächste freigegebene Arbeit
 
 Alle 135 Tasks `done`. Keine offenen Aufgaben. Nächster Schritt ist Produktweiterentwicklung außerhalb des Task-Systems (M1–M14 gemäß CLAUDE.md).
+
+## Session 36 — Attachment Bottom Sheet Wiring & Tests
+
+### 1. Status
+- **Branch:** `feat/claudroide-next-architecture` (1 ahead of tracking)
+- **Uncommitted changes:** 6 files (4 modified, 2 new)
+- **Checkpoint:** `/tmp/claudroide-checkpoints/20261012-151500/repo.bundle`
+
+### 2. Work Completed
+- **Wired `AttachmentBottomSheet` into `ChatScreen`**: Removed unused local `showAttachmentSheet` state variable; added conditional rendering of `AttachmentBottomSheet` driven by `ChatUiState.showAttachmentSheet`.
+- **`ChatViewModel.onAttachmentClick()`**: Replaced TODO with toggle logic for `showAttachmentSheet` state field.
+- **`ChatViewModel.onDismissAttachmentSheet()`**: New method to dismiss the sheet.
+- **`ChatUiState`**: Added `showAttachmentSheet: Boolean = false` field.
+- **Strings**: Added `chat_attachment_*` resources in both English and German (from prior partial commit).
+- **Tests**: Added `AttachmentBottomSheetTest.kt` (5 tests for `AttachmentOption` enum) and 3 new tests in `ChatViewModelTest.kt` for sheet toggle behavior.
+
+### 3. Test Results
+- Command: `./gradlew :app:testDebugUnitTest`
+- Result: **BUILD SUCCESSFUL**
+- **2587 Tests in 135 suites, 0 failures, 0 errors, 0 skipped** (up from 2530 in checkpoint: 5 new tests for AttachmentOption + 3 for ViewModel sheet toggle + 2 from AttachmentBottomSheet.kt file)
+- `python3 tools/secret_gate.py .` → 0 Treffer
+- `python3 tools/sync_frontmatter.py --check` → OK
+
+### 4. Files Modified
+- `app/src/main/java/org/claudroide/app/feature/chat/ChatScreen.kt` — wired AttachmentBottomSheet
+- `app/src/main/java/org/claudroide/app/feature/chat/ChatViewModel.kt` — added showAttachmentSheet state + toggle methods
+- `app/src/main/res/values/strings.xml` — attachment sheet strings (English)
+- `app/src/main/res/values-de/strings.xml` — attachment sheet strings (German)
+- `app/src/test/java/org/claudroide/app/ChatViewModelTest.kt` — 3 new tests
+- `app/src/test/java/org/claudroide/app/AttachmentBottomSheetTest.kt` — new test file (5 tests)
+
+### 5. Known Gaps
+- `onOptionSelected` and `onManageContextClick` are wired with TODO placeholders — actual option handling (file picker, camera, project context, logcat) is pending.
+- No instrumented Compose UI tests (project uses JVM unit tests only; `ui-test-junit4` available but adb shows no device).
+- The stray file `==="` exists in repo root (pre-existing artifact, not part of this work).
+
+### 6. Next Steps
+- Implement `AttachmentOption` click handlers: FILES_AND_CODE, PHOTOS_AND_DOCS, CAMERA, PROJECT_CONTEXT, LOGCAT
+- Consider adding Compose instrumentation tests if a device can be connected
+- Verify the `AttachmentBottomSheet` visually renders correctly on device

@@ -134,6 +134,39 @@ class ChatViewModelTest {
         assertTrue(vm1.uiState.value.conversationId.isNotBlank())
         assertTrue(vm2.uiState.value.conversationId.isNotBlank())
     }
+
+    // ── Attachment sheet toggle ─────────────────────────────────────────────────
+
+    @Test
+    fun onAttachmentClick_showsAttachmentSheet() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+        assertFalse(vm.uiState.value.showAttachmentSheet)
+
+        vm.onAttachmentClick()
+        assertTrue(vm.uiState.value.showAttachmentSheet)
+    }
+
+    @Test
+    fun onAttachmentClick_togglesAttachmentSheet() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+
+        vm.onAttachmentClick()
+        assertTrue(vm.uiState.value.showAttachmentSheet)
+
+        vm.onAttachmentClick()
+        assertFalse(vm.uiState.value.showAttachmentSheet)
+    }
+
+    @Test
+    fun onDismissAttachmentSheet_hidesAttachmentSheet() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+
+        vm.onAttachmentClick()
+        assertTrue(vm.uiState.value.showAttachmentSheet)
+
+        vm.onDismissAttachmentSheet()
+        assertFalse(vm.uiState.value.showAttachmentSheet)
+    }
 }
 
 /** Minimal key vault that returns null for every key. */
