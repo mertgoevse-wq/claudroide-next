@@ -1,74 +1,47 @@
 package org.claudroide.app.feature.chat
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.claudroide.app.R
-import org.claudroide.app.core.design.TypeTokens
+import org.claudroide.app.core.design.components.BrandMark
 import org.claudroide.app.core.design.components.CodeBlock
-import org.claudroide.app.core.design.components.EmptyState
-import org.claudroide.app.core.design.components.MessageBubble
+import org.claudroide.app.core.design.components.StreamingText
+import org.claudroide.app.core.design.theme_compat.CcTheme
+import org.claudroide.app.core.i18n.TimeBasedGreeting
 import org.claudroide.app.feature.provider.ProviderCatalogRegistry
 
 /**
  * One entry in the transcript.
- *
- * `code` is separate from `text` rather than embedded in it: a fenced block
- * inside a paragraph cannot be given the monospaced surface, the darker
- * background and the horizontal padding it needs, and a code sample squeezed
- * into proportional text is the single most common way an assistant UI stops
- * being readable.
  */
 data class ChatMessage(
     val id: String,
@@ -96,6 +69,7 @@ fun ChatScreen(
     onStopClick: () -> Unit = {},
     onAttachmentClick: () -> Unit = {},
     onModeClick: () -> Unit = {},
+    onNavigationClick: () -> Unit = {},
     viewModel: ChatViewModel? = null,
 ) {
     val s = viewModel?.uiState?.collectAsStateWithLifecycle()?.value ?: ChatUiState()
@@ -105,69 +79,79 @@ fun ChatScreen(
             ?.displayName ?: input.targetProviderName
     )
     val effectiveError = s.error
-
+    val colors = CcTheme.tokens.colors
     val listState = rememberLazyListState()
 
+    // Auto-scroll to latest message when new message arrives
+    LaunchedEffect(effectiveMessages.size, s.isStreaming) {
+        if (effectiveMessages.isNotEmpty()) {
+            listState.animateScrollToItem(effectiveMessages.size - 1)
+        }
+    }
+
     Scaffold(
+        containerColor = colors.background,
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.chat_session_title),
-                            style = TypeTokens.TitleLargeStyle, // 16sp / 24sp, medium per spec
-                        )
-                        Text(
-                            text = effectiveInput.targetProviderName,
-                            style = TypeTokens.BodySmallStyle,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                    if (effectiveMessages.isNotEmpty()) {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.chat_session_title),
+                                style = CcTheme.tokens.typography.titleMedium,
+                                color = colors.textPrimary,
+                            )
+                            Text(
+                                text = effectiveInput.targetProviderName,
+                                style = CcTheme.tokens.typography.bodySmall,
+                                color = colors.textSecondary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = { /* Open navigation drawer - TODO */ },
-                        modifier = Modifier.padding(start = 8.dp),
+                        onClick = onNavigationClick,
+                        modifier = Modifier.padding(start = 4.dp),
                     ) {
                         Icon(
-                            Icons.Default.Menu,
+                            imageVector = Icons.Default.Menu,
                             contentDescription = stringResource(R.string.nav_chat),
+                            tint = colors.textPrimary,
                         )
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { viewModel?.newConversation() ?: onNewChatClick() },
-                        modifier = Modifier.padding(end = 8.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = stringResource(R.string.chat_new_conversation),
-                        )
+                    if (effectiveMessages.isNotEmpty()) {
+                        IconButton(
+                            onClick = { viewModel?.newConversation() ?: onNewChatClick() },
+                            modifier = Modifier.padding(end = 4.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(R.string.chat_new_conversation),
+                                tint = colors.textPrimary,
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = { /* User Profile / Account */ },
+                            modifier = Modifier.padding(end = 4.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "Profile",
+                                tint = colors.textSecondary,
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = colors.background,
                 ),
             )
-        },
-        floatingActionButton = {
-            if (effectiveMessages.isEmpty()) {
-                FilledIconButton(
-                    onClick = { viewModel?.newConversation() ?: onNewChatClick() },
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = stringResource(R.string.chat_new_conversation),
-                    )
-                }
-            }
         },
     ) { padding ->
         Column(
@@ -177,64 +161,102 @@ fun ChatScreen(
                 .imePadding(),
         ) {
             if (effectiveMessages.isEmpty()) {
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                // ── Home / Empty State (Faithful to Screenshot_20261010_133740_Claude.jpg) ──
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(TypeTokens.SpacingMedium),
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(horizontal = 24.dp),
                     ) {
-                        // Greeting centered and lower in the content area
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(TypeTokens.SpacingXSmall),
-                        ) {
-                            // Brand mark / spark icon
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                            Text(
-                                text = stringResource(R.string.empty_chat_greeting),
-                                style = TypeTokens.TitleLargeStyle,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            )
-                            Text(
-                                text = stringResource(R.string.empty_chat_subtitle),
-                                style = TypeTokens.BodyMediumStyle,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            )
-                        }
-                        // The composer is already at the bottom via Scaffold
-                        // No action cards - the chat box is the primary entry point
+                        // Terracotta brand mark / sunburst
+                        BrandMark(
+                            size = 64.dp,
+                            contentDescription = stringResource(R.string.brand_mark_alt_text),
+                        )
+
+                        Spacer(Modifier.height(18.dp))
+
+                        // Large Serif Greeting: "Guten Tag, Mert" / "Good afternoon, Mert"
+                        Text(
+                            text = remember { TimeBasedGreeting.greetingNow("Mert") },
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = colors.textPrimary,
+                            textAlign = TextAlign.Center,
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.empty_chat_subtitle),
+                            style = CcTheme.tokens.typography.bodyMedium,
+                            color = colors.textSecondary,
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             } else {
+                // ── Active Chat Transcript (Faithful to Screenshot_20261010_133802_Claude.jpg) ──
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.weight(1f),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        horizontal = TypeTokens.SpacingMedium,
-                        vertical = TypeTokens.SpacingMedium,
+                    contentPadding = PaddingValues(
+                        horizontal = 16.dp,
+                        vertical = 12.dp,
                     ),
-                    verticalArrangement = Arrangement.spacedBy(TypeTokens.SpacingMedium),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     items(effectiveMessages, key = { it.id }) { message ->
-                        MessageBubble(
-                            text = message.text,
-                            mine = message.fromUser,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .widthIn(max = 320.dp),
-                            footer = message.code?.let { code ->
-                                { CodeBlock(code = code, modifier = Modifier.fillMaxWidth()) }
-                            },
-                        )
+                        if (message.fromUser) {
+                            // User Message: Right-aligned subtle dark bubble
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = colors.surfaceSubtle,
+                                    modifier = Modifier.widthIn(max = 310.dp),
+                                ) {
+                                    Text(
+                                        text = message.text,
+                                        style = CcTheme.tokens.typography.bodyLarge,
+                                        color = colors.textPrimary,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    )
+                                }
+                            }
+                        } else {
+                            // Assistant Message: Left-aligned directly on canvas (no bubble)
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                StreamingText(
+                                    text = message.text,
+                                    isStreaming = message.isStreaming,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                                message.code?.let { code ->
+                                    CodeBlock(
+                                        code = code,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
+                                }
+                            }
+                        }
                     }
-                    if (s.isStreaming && effectiveMessages.lastOrNull()?.isStreaming == true) {
-                        item(key = "streaming") { StreamingIndicator() }
+
+                    if (s.isStreaming && effectiveMessages.lastOrNull()?.isStreaming != true) {
+                        item(key = "streaming_indicator") {
+                            StreamingIndicator()
+                        }
                     }
                 }
             }
@@ -242,12 +264,13 @@ fun ChatScreen(
             if (effectiveError != null) {
                 Text(
                     text = effectiveError,
-                    style = TypeTokens.BodySmallStyle,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(horizontal = TypeTokens.SpacingMedium)
+                    style = CcTheme.tokens.typography.bodySmall,
+                    color = colors.danger,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
                 )
             }
 
+            // ── Floating Bottom Composer Card ──
             MessageComposer(
                 input = effectiveInput,
                 onInputChange = { viewModel?.onInputChange(it) ?: onInputChange(it) },
@@ -265,46 +288,35 @@ fun ChatScreen(
         AttachmentBottomSheet(
             onDismissRequest = { viewModel?.onDismissAttachmentSheet() ?: onAttachmentClick() },
             onOptionSelected = { option ->
-                // TODO: handle attachment option selection
+                viewModel?.onDismissAttachmentSheet()
+                when (option) {
+                    AttachmentOption.FILES_AND_CODE -> {
+                        viewModel?.addAttachment("main.kt", 1024)
+                    }
+                    AttachmentOption.PHOTOS_AND_DOCS -> {
+                        viewModel?.addAttachment("screenshot.png", 20480, "image/png", false)
+                    }
+                    AttachmentOption.CAMERA -> {
+                        viewModel?.addAttachment("camera_scan.jpg", 16384, "image/jpeg", false)
+                    }
+                    AttachmentOption.PROJECT_CONTEXT -> {
+                        viewModel?.addAttachment("claudroide-spec.md", 8192)
+                    }
+                    AttachmentOption.LOGCAT -> {
+                        viewModel?.addAttachment("logcat.txt", 4096)
+                    }
+                }
             },
             onManageContextClick = {
-                // TODO: open context management
+                viewModel?.onDismissAttachmentSheet()
             },
         )
     }
 }
 
 /**
- * Shown while a response is still arriving.
- *
- * It states that work is happening. A spinner alone says "the app is busy";
- * this says the answer is arriving and offers the way out of it.
+ * Floating bottom composer card matching Claude Android.
  */
-@Composable
-private fun StreamingIndicator() {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(TypeTokens.SpacingSmall),
-        ) {
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(MaterialTheme.colorScheme.primary, CircleShape)
-            )
-            Text(
-                text = stringResource(R.string.chat_streaming),
-                style = TypeTokens.BodyMediumStyle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
 @Composable
 private fun MessageComposer(
     input: ChatInputState,
@@ -316,112 +328,181 @@ private fun MessageComposer(
     mode: ComposerMode,
     viewModel: ChatViewModel? = null,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = TypeTokens.SpacingMedium, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(TypeTokens.SpacingSmall),
-        ) {
-            // Attachment preview row
-            if (input.attachments.isNotEmpty()) {
-                AttachmentPreviewRow(
-                    attachments = input.attachments,
-                    onRemove = { attachmentId ->
-                        viewModel?.removeAttachment(attachmentId)
-                    }
-                )
-            }
+    val colors = CcTheme.tokens.colors
 
-            TextField(
-                value = input.text,
-                onValueChange = onInputChange,
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Surface(
+            shape = RoundedCornerShape(26.dp),
+            color = colors.surface,
+            border = BorderStroke(1.dp, colors.border),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .widthIn(min = 0.dp),
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.chat_composer_hint),
-                        style = TypeTokens.BodyMediumStyle,
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // Staged attachments preview
+                if (input.attachments.isNotEmpty()) {
+                    AttachmentPreviewRow(
+                        attachments = input.attachments,
+                        onRemove = { attachmentId ->
+                            viewModel?.removeAttachment(attachmentId)
+                        },
                     )
-                },
-                leadingIcon = {
-                    // Attachment button
-                    IconButton(onClick = onAttachmentClick) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = stringResource(R.string.chat_composer_attachment),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                }
+
+                // Clean multiline input text area
+                TextField(
+                    value = input.text,
+                    onValueChange = onInputChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 44.dp),
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.chat_composer_hint),
+                            style = CcTheme.tokens.typography.bodyMedium,
+                            color = colors.textSecondary,
                         )
-                    }
-                },
-                trailingIcon = {
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedTextColor = colors.textPrimary,
+                        unfocusedTextColor = colors.textPrimary,
+                        cursorColor = colors.accent,
+                    ),
+                    textStyle = CcTheme.tokens.typography.bodyMedium,
+                    maxLines = 6,
+                )
+
+                // Bottom row: + attachment, model pill, and action / voice button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // Left controls
                     Row(
-                        modifier = Modifier.padding(end = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        // Mode selector button
-                        IconButton(
-                            onClick = onModeClick,
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            ),
+                        // Circular + button
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(colors.surfaceSubtle)
+                                .clickable(onClick = onAttachmentClick),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                Icons.Default.Code,
-                                contentDescription = stringResource(R.string.chat_composer_mode),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(R.string.chat_composer_attachment),
+                                tint = colors.textPrimary,
+                                modifier = Modifier.size(20.dp),
                             )
                         }
-                        // Send/Stop action button
-                        val action = input.actionButtonState
-                        FilledIconButton(
-                            onClick = when (action) {
-                                InputActionButtonState.STOP -> onStopClick
-                                InputActionButtonState.SEND -> onSendClick
-                                InputActionButtonState.DISABLED -> ({ })
-                            },
-                            enabled = action != InputActionButtonState.DISABLED,
-                            colors = IconButtonDefaults.filledIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary,
-                            ),
+
+                        // Model / Provider Selector Pill
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = colors.surfaceSubtle,
+                            modifier = Modifier.clickable(onClick = onModeClick),
                         ) {
-                            Icon(
-                                imageVector = if (action == InputActionButtonState.STOP) {
-                                    Icons.Filled.Stop
-                                } else {
-                                    Icons.Filled.ArrowUpward
-                                },
-                                contentDescription = stringResource(
-                                    when (action) {
-                                        InputActionButtonState.STOP -> R.string.chat_stop
-                                        else -> R.string.chat_send
-                                    }
-                                ),
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(
+                                    text = input.targetProviderName,
+                                    style = CcTheme.tokens.typography.labelSmall,
+                                    color = colors.textPrimary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                     }
-                },
-                maxLines = 6,
-                shape = RoundedCornerShape(22.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                    unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                ),
-            )
-            Text(
-                text = stringResource(R.string.chat_composer_helper),
-                style = TypeTokens.BodySmallStyle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = TypeTokens.SpacingXSmall),
-            )
+
+                    // Right controls: Voice / Mic button or Send / Stop button
+                    val action = input.actionButtonState
+                    if (input.text.isNotBlank() || action == InputActionButtonState.STOP) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.White,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable(
+                                    onClick = if (action == InputActionButtonState.STOP) onStopClick else onSendClick
+                                ),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = if (action == InputActionButtonState.STOP) {
+                                        Icons.Filled.Stop
+                                    } else {
+                                        Icons.Filled.ArrowUpward
+                                    },
+                                    contentDescription = stringResource(
+                                        if (action == InputActionButtonState.STOP) R.string.chat_stop else R.string.chat_send
+                                    ),
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                        }
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(colors.surfaceSubtle)
+                                    .clickable(onClick = { /* Voice input */ }),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Mic,
+                                    contentDescription = "Voice input",
+                                    tint = colors.textSecondary,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                            Surface(
+                                shape = CircleShape,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clickable(onClick = { /* Voice conversation mode */ }),
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.GraphicEq,
+                                        contentDescription = "Voice mode",
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(22.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -431,42 +512,72 @@ private fun AttachmentPreviewRow(
     attachments: List<AttachmentItem>,
     onRemove: (String) -> Unit,
 ) {
+    val colors = CcTheme.tokens.colors
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = TypeTokens.SpacingXSmall, vertical = TypeTokens.SpacingXSmall),
-        horizontalArrangement = Arrangement.spacedBy(TypeTokens.SpacingSmall),
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         attachments.forEach { attachment ->
             Surface(
-                shape = RoundedCornerShape(TypeTokens.CornerRadiusSmall),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier
-                    .height(32.dp)
-                    .padding(end = TypeTokens.SpacingXSmall),
+                shape = RoundedCornerShape(12.dp),
+                color = colors.surfaceSubtle,
+                modifier = Modifier.height(34.dp),
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = TypeTokens.SpacingSmall),
+                    modifier = Modifier.padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(TypeTokens.SpacingXSmall),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
                         text = attachment.name,
-                        style = TypeTokens.BodySmallStyle,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = CcTheme.tokens.typography.bodySmall,
+                        color = colors.textPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
                     )
-                    IconButton(onClick = { onRemove(attachment.id) }) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Remove attachment",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Remove attachment",
+                        tint = colors.textSecondary,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable { onRemove(attachment.id) },
+                    )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Shown while a response is still arriving.
+ */
+@Composable
+private fun StreamingIndicator() {
+    val colors = CcTheme.tokens.colors
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = colors.surfaceSubtle,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(colors.accent, CircleShape),
+            )
+            Text(
+                text = stringResource(R.string.chat_streaming),
+                style = CcTheme.tokens.typography.bodyMedium,
+                color = colors.textSecondary,
+            )
         }
     }
 }

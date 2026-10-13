@@ -167,6 +167,21 @@ class ChatViewModelTest {
         vm.onDismissAttachmentSheet()
         assertFalse(vm.uiState.value.showAttachmentSheet)
     }
+
+    @Test
+    fun addAttachment_and_removeAttachment_manageAttachmentsList() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+        assertEquals(0, vm.uiState.value.input.attachments.size)
+
+        vm.addAttachment("test.kt", 1024)
+        assertEquals(1, vm.uiState.value.input.attachments.size)
+        val attachment = vm.uiState.value.input.attachments[0]
+        assertEquals("test.kt", attachment.name)
+        assertEquals(1024L, attachment.sizeBytes)
+
+        vm.removeAttachment(attachment.id)
+        assertEquals(0, vm.uiState.value.input.attachments.size)
+    }
 }
 
 /** Minimal key vault that returns null for every key. */

@@ -15,8 +15,8 @@
     <!-- Empty States -->
     <string name="empty_chat_title">No active conversations</string>
     <string name="empty_chat_desc">Start a new chat or open a local project to begin.</string>
-    <string name="empty_chat_greeting">Guten Tag</string>
-    <string name="empty_chat_subtitle">Was möchten Sie heute bauen?</string>
+    <string name="empty_chat_greeting">Good day</string>
+    <string name="empty_chat_subtitle">What would you like to build today?</string>
     <string name="empty_project_title">No project open</string>
     <string name="empty_project_desc">Select a project directory on your device to inspect and edit code.</string>
 
@@ -27,7 +27,7 @@
     <!-- Chat screen -->
     <string name="chat_session_title">Build session</string>
     <string name="chat_local_only">Local only</string>
-    <string name="chat_composer_hint">Ask about this project…</string>
+    <string name="chat_composer_hint">Reply to ClauDroide…</string>
     <string name="chat_composer_helper">Enter sends · Shift+Enter newline</string>
     <string name="chat_composer_attachment">Add attachment</string>
     <string name="chat_composer_mode">Composer mode</string>
@@ -42,15 +42,15 @@
 
     <!-- Navigation Drawer -->
     <string name="nav_drawer_subtitle">Mert · Pro Plan</string>
-    <string name="nav_drawer_new_chat">Neuer Chat</string>
-    <string name="nav_drawer_close">Schließen</string>
+    <string name="nav_drawer_new_chat">New Chat</string>
+    <string name="nav_drawer_close">Close</string>
     <string name="nav_drawer_chats">Chats</string>
-    <string name="nav_drawer_projects">Projekte</string>
-    <string name="nav_drawer_code_mcp">Code &amp; MCP</string>
-    <string name="nav_drawer_artifacts">Artefakte</string>
-    <string name="nav_drawer_recent_chats">Letzte Chats</string>
-    <string name="nav_drawer_no_recent">Keine kürzlichen Unterhaltungen</string>
-    <string name="nav_drawer_docs">Dokumentation &amp; Shortcuts</string>
+    <string name="nav_drawer_projects">Projects</string>
+    <string name="nav_drawer_code_mcp">Code</string>
+    <string name="nav_drawer_artifacts">Artifacts</string>
+    <string name="nav_drawer_recent_chats">Recent chats</string>
+    <string name="nav_drawer_no_recent">No recent conversations</string>
+    <string name="nav_drawer_docs">Documentation</string>
     <string name="nav_drawer_subscribed">Subscribed</string>
 
     <!-- Attachment Bottom Sheet -->

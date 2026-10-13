@@ -3,58 +3,64 @@ package org.claudroide.app.core.navigation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowRight
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import org.claudroide.app.R
-import org.claudroide.app.core.design.ClaudroideTheme
-import org.claudroide.app.core.design.components.BrandMark
-import org.claudroide.app.core.design.components.ListRow
-import org.claudroide.app.core.design.components.SectionHeader
-import org.claudroide.app.core.design.components.StatusChip
-import org.claudroide.app.core.design.TypeTokens
+import org.claudroide.app.core.design.theme_compat.CcTheme
 
 /**
  * Navigation destination enumeration for the app.
  */
 enum class AppDestination(
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val labelRes: Int,
 ) {
-    CHAT(Icons.Default.History, R.string.nav_chat),
+    CHAT(Icons.Default.ChatBubbleOutline, R.string.nav_chat),
     PROJECTS(Icons.Default.Folder, R.string.nav_projects),
     SETTINGS(Icons.Default.Settings, R.string.nav_settings),
 }
 
 /**
- * Navigation drawer content following the Stitch design specification.
+ * Model representing a recent chat entry.
+ */
+data class RecentChat(
+    val id: String,
+    val title: String,
+    val preview: String,
+    val timestamp: Long,
+)
+
+/**
+ * Navigation drawer content faithful to the official Claude Android app layout.
+ * Reference: Screenshot_20261010_133751_Claude.jpg
  *
- * Structure per Stitch:
- * - Header: Brand mark + "ClauDroide" + user info
- * - Primary action: "Neuer Chat" pill button
- * - Core navigation: Chats (active), Projekte, Code & MCP, Artefakte
- * - Section: Letzte Chats (recent conversations)
- * - Footer: Settings, Documentation, User profile with PRO badge
+ * Structure:
+ * - Header: Serif title "ClauDroide"
+ * - Core navigation: Chats, Projekte, Code, Artefakte, Settings
+ * - Section header: Letzte Chats / Recent chats
+ * - Scrollable recent chats list
+ * - Bottom bar: User avatar ("MZ") + White pill "+ Neuer Chat" / "+ New Chat" button
  */
 @Composable
 fun NavigationDrawer(
@@ -64,275 +70,176 @@ fun NavigationDrawer(
     recentChats: List<RecentChat> = emptyList(),
     userEmail: String = "mert.govse.neu@gmail.com",
     isPro: Boolean = true,
+    currentDestination: AppDestination = AppDestination.CHAT,
     modifier: Modifier = Modifier,
 ) {
+    val colors = CcTheme.tokens.colors
+
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .width(304.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+            .fillMaxHeight()
+            .width(320.dp)
+            .background(colors.background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        // Header with brand mark and user info
-        Column(
+        // 1. Header: Serif Title "ClauDroide" (or "Claude")
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(top = 8.dp, bottom = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    BrandMark(
-                        modifier = Modifier.size(36.dp),
-                        contentDescription = stringResource(R.string.brand_mark_alt_text),
-                    )
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        Text(
-                            text = "ClauDroide",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = stringResource(R.string.nav_drawer_subtitle),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                IconButton(
-                    onClick = onClose,
-                    modifier = Modifier.padding(end = -8.dp),
-                ) {
-                    Icon(
-                        Icons.Filled.Close,
-                        contentDescription = stringResource(R.string.nav_drawer_close),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            // Primary action: Neuer Chat
-            Button(
-                onClick = onNewChatClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-                shape = RoundedCornerShape(24.dp),
-            ) {
-                Row(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.nav_drawer_new_chat),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
-                }
-            }
+            Text(
+                text = "ClauDroide",
+                fontFamily = FontFamily.Serif,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.textPrimary,
+            )
         }
 
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            color = MaterialTheme.colorScheme.outlineVariant,
-        )
-
-        // Core navigation
+        // 2. Primary Navigation Section
         Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            NavigationDrawerItem(
-                icon = Icons.Default.History,
+            DrawerNavigationRow(
+                icon = Icons.Default.ChatBubbleOutline,
                 label = stringResource(R.string.nav_drawer_chats),
-                badge = "5",
-                selected = true,
+                selected = currentDestination == AppDestination.CHAT,
                 onClick = {
                     onDestinationClick(AppDestination.CHAT)
                     onClose()
                 },
             )
-            NavigationDrawerItem(
+            DrawerNavigationRow(
                 icon = Icons.Default.Folder,
                 label = stringResource(R.string.nav_drawer_projects),
-                badge = "4",
+                selected = currentDestination == AppDestination.PROJECTS,
                 onClick = {
                     onDestinationClick(AppDestination.PROJECTS)
                     onClose()
                 },
             )
-            NavigationDrawerItem(
-                icon = Icons.Default.Terminal,
+            DrawerNavigationRow(
+                icon = Icons.Default.Code,
                 label = stringResource(R.string.nav_drawer_code_mcp),
-                badgeText = "Host",
+                selected = false,
                 onClick = {
-                    // Navigate to code/MCP screen
                     onClose()
                 },
             )
-            NavigationDrawerItem(
+            DrawerNavigationRow(
                 icon = Icons.Default.Description,
                 label = stringResource(R.string.nav_drawer_artifacts),
+                selected = false,
                 onClick = {
-                    // Navigate to artifacts screen
                     onClose()
                 },
             )
-        }
-
-        Divider(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.outlineVariant,
-        )
-
-        // Recent chats section
-        SectionHeader(
-            title = stringResource(R.string.nav_drawer_recent_chats),
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
-
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            recentChats.forEach { chat ->
-                NavigationDrawerItem(
-                    icon = Icons.Default.History,
-                    label = chat.title,
-                    subtitle = chat.preview,
-                    onClick = {
-                        // Navigate to specific chat
-                        onClose()
-                    },
-                )
-            }
-            if (recentChats.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.nav_drawer_no_recent),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 13.sp,
-                )
-            }
-        }
-
-        Spacer(Modifier.weight(1f))
-
-        // Footer
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            NavigationDrawerItem(
+            DrawerNavigationRow(
                 icon = Icons.Default.Settings,
                 label = stringResource(R.string.nav_settings),
+                selected = currentDestination == AppDestination.SETTINGS,
                 onClick = {
                     onDestinationClick(AppDestination.SETTINGS)
                     onClose()
                 },
             )
-            NavigationDrawerItem(
-                icon = Icons.AutoMirrored.Filled.MenuBook,
-                label = stringResource(R.string.nav_drawer_docs),
-                onClick = {
-                    // Open documentation
-                    onClose()
-                },
-            )
         }
 
-        // User profile card
-        Card(
+        Spacer(Modifier.height(16.dp))
+
+        // 3. Section Header: Recent chats / Letzte Chats
+        Text(
+            text = stringResource(R.string.nav_drawer_recent_chats),
+            style = CcTheme.tokens.typography.labelSmall,
+            color = colors.textTertiary,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp),
+        )
+
+        // 4. Recent Chats List
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            if (recentChats.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.nav_drawer_no_recent),
+                        style = CcTheme.tokens.typography.bodySmall,
+                        color = colors.textTertiary,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    )
+                }
+            } else {
+                items(recentChats, key = { it.id }) { chat ->
+                    RecentChatRow(
+                        title = chat.title,
+                        onClick = {
+                            onClose()
+                        },
+                    )
+                }
+            }
+        }
+
+        // 5. Bottom Bar: User Avatar + Pill "+ New Chat" button
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+                .padding(top = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            // User Avatar ("MZ")
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(colors.accent, CircleShape),
+                contentAlignment = Alignment.Center,
             ) {
-                // User avatar
-                Box(
-                    modifier = Modifier.size(40.dp),
-                    contentAlignment = Alignment.Center,
+                Text(
+                    text = "MZ",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onAccent,
+                )
+            }
+
+            // High-contrast "+ New Chat" pill button
+            Button(
+                onClick = {
+                    onNewChatClick()
+                    onClose()
+                },
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.Black,
+                ),
+                contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                    ) {
-                        Text(
-                            text = "MZ",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
-                }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text(
-                        text = userEmail,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.Black,
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        StatusChip(
-                            label = stringResource(R.string.nav_drawer_subscribed),
-                            tint = MaterialTheme.colorScheme.tertiaryContainer,
-                        )
-                        Text(
-                            text = "v3.7",
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                if (isPro) {
                     Text(
-                        text = "PRO",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                            .background(
-                                MaterialTheme.colorScheme.tertiaryContainer,
-                                RoundedCornerShape(12.dp),
-                            ),
+                        text = stringResource(R.string.nav_drawer_new_chat),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black,
                     )
                 }
             }
@@ -341,112 +248,81 @@ fun NavigationDrawer(
 }
 
 /**
- * Individual navigation drawer item.
+ * Drawer item row with icon and title.
  */
 @Composable
-fun NavigationDrawerItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+private fun DrawerNavigationRow(
+    icon: ImageVector,
     label: String,
-    subtitle: String? = null,
-    badge: String? = null,
-    badgeText: String? = null,
-    selected: Boolean = false,
+    selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
-    else Color.Transparent
-
-    val contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-    else MaterialTheme.colorScheme.onSurface
+    val colors = CcTheme.tokens.colors
+    val background = if (selected) colors.surfaceSubtle else Color.Transparent
+    val textColor = if (selected) colors.textPrimary else colors.textSecondary
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp),
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
+        color = background,
         shape = RoundedCornerShape(12.dp),
-        color = containerColor,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-                .then(if (onClick != null) Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onClick)
-                else Modifier),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = contentColor.copy(alpha = 0.8f),
+                tint = textColor,
                 modifier = Modifier.size(20.dp),
             )
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = label,
-                    fontSize = 14.sp,
-                    fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
-                    color = contentColor,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                )
-                subtitle?.let {
-                    Text(
-                        text = it,
-                        fontSize = 12.sp,
-                        color = contentColor.copy(alpha = 0.7f),
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    )
-                }
-            }
-            if (selected) {
-                Box(
-                    modifier = Modifier.size(6.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape),
-                    )
-                }
-            }
-            badge?.let {
-                Text(
-                    text = it,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp)),
-                )
-            }
-            badgeText?.let {
-                Text(
-                    text = it,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.04.em,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(10.dp)),
-                )
-            }
+            Text(
+                text = label,
+                style = CcTheme.tokens.typography.bodyMedium,
+                fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                color = textColor,
+            )
         }
     }
 }
 
-data class RecentChat(
-    val id: String,
-    val title: String,
-    val preview: String,
-    val timestamp: Long,
-)
+/**
+ * Recent chat item with leading chat bubble icon.
+ */
+@Composable
+private fun RecentChatRow(
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = CcTheme.tokens.colors
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Default.ChatBubbleOutline,
+            contentDescription = null,
+            tint = colors.textTertiary,
+            modifier = Modifier.size(16.dp),
+        )
+        Text(
+            text = title,
+            style = CcTheme.tokens.typography.bodyMedium,
+            color = colors.textPrimary,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        )
+    }
+}

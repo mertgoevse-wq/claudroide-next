@@ -17,6 +17,12 @@ public data class CcColorScheme(
     val background: Color,
     val surface: Color,
     val surfaceSubtle: Color,
+    val surfaceLow: Color,
+    val surfaceContainer: Color,
+    val surfaceContainerLow: Color,
+    val surfaceContainerLowest: Color,
+    val surfaceContainerHigh: Color,
+    val surfaceContainerHighest: Color,
     val border: Color,
     val borderStrong: Color,
     val textPrimary: Color,
@@ -97,6 +103,12 @@ public object CcColors {
         background = Color(0xFFFAF9F5),
         surface = Color(0xFFFFFFFF),
         surfaceSubtle = Color(0xFFF2F0EA),
+        surfaceLow = Color(0xFFFFFFFF),
+        surfaceContainer = Color(0xFFFFFFFF),
+        surfaceContainerLow = Color(0xFFFAF9F8),
+        surfaceContainerLowest = Color(0xFFF8F7F4),
+        surfaceContainerHigh = Color(0xFFF2F0EA),
+        surfaceContainerHighest = Color(0xFFEBEAE6),
         border = Color(0xFFE3E0D8),
         borderStrong = Color(0xFF948E82), // 3.09:1 — the boundary of an interactive control
         textPrimary = Color(0xFF1F1E1B), // 16.67:1
@@ -120,6 +132,12 @@ public object CcColors {
         background = Color(0xFF1A1917),
         surface = Color(0xFF232220),
         surfaceSubtle = Color(0xFF2C2A27),
+        surfaceLow = Color(0xFF1F1E1B),
+        surfaceContainer = Color(0xFF232220),
+        surfaceContainerLow = Color(0xFF1F1E1B),
+        surfaceContainerLowest = Color(0xFF1A1917),
+        surfaceContainerHigh = Color(0xFF2C2A27),
+        surfaceContainerHighest = Color(0xFF353330),
         border = Color(0xFF3A3835),
         borderStrong = Color(0xFF74716D), // 3.27:1
         textPrimary = Color(0xFFF2F0EA), // 13.95:1

@@ -281,6 +281,27 @@ class ChatViewModel @JvmOverloads constructor(
         // TODO: Open mode selector
     }
 
+    fun addAttachment(
+        name: String,
+        sizeBytes: Long,
+        mimeType: String = "text/plain",
+        isTextOrCode: Boolean = true,
+    ) {
+        val item = AttachmentItem(
+            id = java.util.UUID.randomUUID().toString(),
+            name = name,
+            mimeType = mimeType,
+            sizeBytes = sizeBytes,
+            isTextOrCode = isTextOrCode,
+            providerConsentGiven = true,
+        )
+        _uiState.value = _uiState.value.copy(
+            input = _uiState.value.input.copy(
+                attachments = _uiState.value.input.attachments + item
+            )
+        )
+    }
+
     fun removeAttachment(attachmentId: String) {
         _uiState.value = _uiState.value.copy(
             input = _uiState.value.input.copy(

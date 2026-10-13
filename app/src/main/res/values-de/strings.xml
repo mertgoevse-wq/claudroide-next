@@ -27,7 +27,7 @@
     <!-- Chat screen -->
     <string name="chat_session_title">Build-Sitzung</string>
     <string name="chat_local_only">Nur lokal</string>
-    <string name="chat_composer_hint">Fragen Sie etwas zu diesem Projekt…</string>
+    <string name="chat_composer_hint">Mit ClauDroide chatten…</string>
     <string name="chat_composer_helper">Enter sendet · Shift+Enter neue Zeile</string>
     <string name="chat_composer_attachment">Anhang hinzufügen</string>
     <string name="chat_composer_mode">Kompositionsmodus</string>
@@ -46,11 +46,11 @@
     <string name="nav_drawer_close">Schließen</string>
     <string name="nav_drawer_chats">Chats</string>
     <string name="nav_drawer_projects">Projekte</string>
-    <string name="nav_drawer_code_mcp">Code &amp; MCP</string>
+    <string name="nav_drawer_code_mcp">Code</string>
     <string name="nav_drawer_artifacts">Artefakte</string>
     <string name="nav_drawer_recent_chats">Letzte Chats</string>
     <string name="nav_drawer_no_recent">Keine kürzlichen Unterhaltungen</string>
-    <string name="nav_drawer_docs">Dokumentation &amp; Shortcuts</string>
+    <string name="nav_drawer_docs">Dokumentation</string>
     <string name="nav_drawer_subscribed">Subscribed</string>
 
     <!-- Attachment Bottom Sheet -->

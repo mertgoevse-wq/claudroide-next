@@ -5,15 +5,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -21,9 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import org.claudroide.app.core.design.ClaudroideTheme
+import org.claudroide.app.core.design.ThemeMode
+import org.claudroide.app.core.design.ThemeModeResolver
+import org.claudroide.app.core.design.theme_compat.CcTheme
 import org.claudroide.app.core.diagnostics.StartupDiagnostics
 import org.claudroide.app.core.navigation.AppDestination
 import org.claudroide.app.core.navigation.NavigationDrawer
@@ -54,7 +59,8 @@ class MainActivity : ComponentActivity() {
 
         StartupDiagnostics.markPhase(StartupDiagnostics.Phase.COMPOSE_INIT)
         setContent {
-            ClaudroideTheme {
+            val isDark = isSystemInDarkTheme()
+            CcTheme(darkTheme = isDark) {
                 AppShell()
             }
         }
@@ -64,7 +70,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppShell() {
     var currentDestination by remember { mutableStateOf(AppDestination.CHAT) }
-    var drawerOpen by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     StartupDiagnostics.markPhase(StartupDiagnostics.Phase.VIEWMODEL_INIT)
@@ -87,14 +93,28 @@ fun AppShell() {
         )
     }
 
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            AppDestination.entries.forEach { destination ->
-                item(
-                    icon = { Icon(destination.icon, contentDescription = stringResource(destination.labelRes)) },
-                    label = { Text(stringResource(destination.labelRes)) },
-                    selected = destination == currentDestination,
-                    onClick = { currentDestination = destination }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = CcTheme.tokens.colors.background,
+                drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp),
+            ) {
+                NavigationDrawer(
+                    onDestinationClick = { destination ->
+                        currentDestination = destination
+                        scope.launch { drawerState.close() }
+                    },
+                    onNewChatClick = {
+                        chatViewModel.newConversation()
+                        currentDestination = AppDestination.CHAT
+                        scope.launch { drawerState.close() }
+                    },
+                    onClose = {
+                        scope.launch { drawerState.close() }
+                    },
+                    recentChats = recentChats,
+                    currentDestination = currentDestination,
                 )
             }
         },
@@ -103,30 +123,14 @@ fun AppShell() {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Main content
             when (currentDestination) {
                 AppDestination.CHAT -> ChatScreen(
                     viewModel = chatViewModel,
                     onNewChatClick = { chatViewModel.newConversation() },
+                    onNavigationClick = { scope.launch { drawerState.open() } },
                 )
                 AppDestination.PROJECTS -> ProjectScreen()
                 AppDestination.SETTINGS -> SettingsScreen()
-            }
-
-            // Navigation Drawer overlay
-            if (drawerOpen) {
-                NavigationDrawer(
-                    onDestinationClick = { destination ->
-                        currentDestination = destination
-                        drawerOpen = false
-                    },
-                    onNewChatClick = {
-                        chatViewModel.newConversation()
-                        drawerOpen = false
-                    },
-                    onClose = { drawerOpen = false },
-                    recentChats = recentChats,
-                )
             }
         }
     }
