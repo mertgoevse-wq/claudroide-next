@@ -182,6 +182,52 @@ class ChatViewModelTest {
         vm.removeAttachment(attachment.id)
         assertEquals(0, vm.uiState.value.input.attachments.size)
     }
+
+    @Test
+    fun onModeClick_and_onDismissModelDialog_toggleState() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+        assertFalse(vm.uiState.value.showModelDialog)
+
+        vm.onModeClick()
+        assertTrue(vm.uiState.value.showModelDialog)
+
+        vm.onDismissModelDialog()
+        assertFalse(vm.uiState.value.showModelDialog)
+    }
+
+    @Test
+    fun onVoiceClick_and_onDismissVoiceInfoDialog_toggleState() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+        assertFalse(vm.uiState.value.showVoiceInfoDialog)
+
+        vm.onVoiceClick()
+        assertTrue(vm.uiState.value.showVoiceInfoDialog)
+
+        vm.onDismissVoiceInfoDialog()
+        assertFalse(vm.uiState.value.showVoiceInfoDialog)
+    }
+
+    @Test
+    fun onProfileClick_and_onDismissProfileDialog_toggleState() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+        assertFalse(vm.uiState.value.showProfileDialog)
+
+        vm.onProfileClick()
+        assertTrue(vm.uiState.value.showProfileDialog)
+
+        vm.onDismissProfileDialog()
+        assertFalse(vm.uiState.value.showProfileDialog)
+    }
+
+    @Test
+    fun selectConversation_updatesConversationId_andResetsState() = runTest {
+        val vm = ChatViewModel(keyVault = FakeKeyVault())
+        val customId = "conv_historical_123"
+
+        vm.selectConversation(customId, "Vorheriger Chat")
+        assertEquals(customId, vm.uiState.value.conversationId)
+        assertNull(vm.uiState.value.error)
+    }
 }
 
 /** Minimal key vault that returns null for every key. */

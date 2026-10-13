@@ -278,7 +278,35 @@ class ChatViewModel @JvmOverloads constructor(
     }
 
     fun onModeClick() {
-        // TODO: Open mode selector
+        _uiState.value = _uiState.value.copy(showModelDialog = true)
+    }
+
+    fun onDismissModelDialog() {
+        _uiState.value = _uiState.value.copy(showModelDialog = false)
+    }
+
+    fun onVoiceClick() {
+        _uiState.value = _uiState.value.copy(showVoiceInfoDialog = true)
+    }
+
+    fun onDismissVoiceInfoDialog() {
+        _uiState.value = _uiState.value.copy(showVoiceInfoDialog = false)
+    }
+
+    fun onProfileClick() {
+        _uiState.value = _uiState.value.copy(showProfileDialog = true)
+    }
+
+    fun onDismissProfileDialog() {
+        _uiState.value = _uiState.value.copy(showProfileDialog = false)
+    }
+
+    fun selectConversation(conversationId: String, title: String) {
+        _uiState.value = _uiState.value.copy(
+            conversationId = conversationId,
+            error = null,
+            streamState = StreamState.IDLE
+        )
     }
 
     fun addAttachment(
@@ -321,7 +349,10 @@ data class ChatUiState(
     val conversationId: String = generateConversationId(),
     val error: String? = null,
     val lastUsage: TokenUsage? = null,
-    val showAttachmentSheet: Boolean = false
+    val showAttachmentSheet: Boolean = false,
+    val showModelDialog: Boolean = false,
+    val showVoiceInfoDialog: Boolean = false,
+    val showProfileDialog: Boolean = false,
 )
 
 data class TokenUsage(

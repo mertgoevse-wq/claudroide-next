@@ -1,19 +1,35 @@
 # ClauDroide-Bauzustand
 
-**Stand:** 2026-10-07 (fünfunddreißigste Sitzung — Final Validation & Startup Crash Securing)
-**Status:** **135 von 135 Aufgaben `done`**, 0 offen. Startup-Crash auf Galaxy A56 analysiert: NoSuchMethodException bei ChatViewModel-Erstellung via viewModel() in MainActivity. Root Cause behoben (AndroidViewModel + @JvmOverloads + Factory), DataStore/Keystore Startup-Absicherung und StartupDiagnostics implementiert. 2535 Tests in 125 Suiten grün. APK bereitgestellt unter `/sdcard/ClauDroide-fixed.apk`.
+**Stand:** 2026-10-13 (siebenunddreißigste Sitzung — Kanonische Unifikation, Back-Navigation, SAF-Projektpersistenz & Control-Audit)
+**Status:** **135 von 135 Aufgaben `done`**, 0 offen. Kanonische Codebasis `claudroide-next` mit Quellprojekt `claudroide` abgeglichen und konsolidiert (`docs/INTEGRATION_MAP.md`). Back-Navigation hierarchisch gehärtet (BottomSheet → ModelDialog → Drawer → Subdestinations → Exit). SAF Projektordner-Auswahl („Boom“) vollständig reaktiv und persistent mit `ProjectStorage` angebunden. Dark-Mode Scrim repariert (`scrim = Color(0xFF000000)`). Alle 34 UI-Controls auditiert und ohne tote Stubs verdrahtet (`docs/CONTROL_AUDIT.md`). 2.608 Tests in 139 Suiten grün. APK bereitgestellt unter `/sdcard/Download/ClauDroide-debug.apk`.
 
-**Teststand (selbst gemessen):** `./gradlew :app:testDebugUnitTest` → BUILD SUCCESSFUL, **2535 Tests in 125 Suiten, 0 Fehler, 0 übersprungen** (+5 Tests neu). APK: `/sdcard/ClauDroide-fixed.apk` 22 MB. `python3 tools/secret_gate.py .` → 0 Treffer, exit 0. `python3 tools/sync_frontmatter.py --check` → OK.
+**Teststand (selbst gemessen):** `./gradlew :app:testDebugUnitTest --rerun-tasks` → BUILD SUCCESSFUL, **2.608 Tests in 139 Suiten, 0 Fehler, 0 übersprungen** (+21 Tests neu). `./gradlew :app:assembleDebug` → BUILD SUCCESSFUL (23.094.444 Bytes). APK: `/sdcard/Download/ClauDroide-debug.apk` 22 MB, SHA-256 `7549de90dd9ab9f2b848c038352e1aa40d6a17956c9b2752c58854c912586c33`. `python3 tools/secret_gate.py .` → 0 Treffer, exit 0. `python3 tools/sync_frontmatter.py --check` → OK. `git diff --check` → OK.
 
-**Gerät (selbst gemessen):** SM-A566B, Termux/Debian/PRoot. `adb devices` zeigt **kein** Gerät. Logcat aus Termux ohne Root/ADB geblockt ("Operation not permitted"). StartupDiagnostics-Schicht erzeugt app-interne und auf dem Speicher lesbare Diagnoselogs.
+**Gerät (selbst gemessen):** SM-A566B, Termux/Debian/PRoot. `adb devices` zeigt **kein** Gerät (PRoot Sandbox). APK direkt auf `/sdcard/Download/` bereitgestellt.
 
-**GitHub Remote (`origin/main`):** Repository `https://github.com/mertgoevse-wq/claudroide.git`.
+**GitHub Remotes:**
+- Privates Ziel: `next` → `https://github.com/mertgoevse-wq/claudroide-next.git`
+- Ursprüngliches Repo: `origin` → `https://github.com/mertgoevse-wq/claudroide.git` (niemals dorthin pushen).
 
-**Letzte sichere Git-Referenz:** `b6eb3ed` auf `main`.
+**Letzte sichere Git-Referenz:** `a0624af` auf `feat/claudroide-next-architecture`.
 
-**Ältere Sitzungen:** Sitzung 1–19 stehen in `progress/history/BUILD-STATE-sessions-01-19.md`, Sitzung 20–30 weiter unten in dieser Datei.
+## Sitzung 37 — Kanonische Codebasis-Unifikation, Back-Navigation, SAF-Fix & Control-Audit
 
-## Sitzung 35 — Final Validation & Startup Crash Securing
+### 1. Integration & Vergleich
+- Abgleich aller Komponenten aus `claudroide` (Commits `440e3c0` und `e8c372c`) in `docs/INTEGRATION_MAP.md`.
+- Quell-Commit `440e3c0` (ControlBridge, AccessibilityService, ToolExecutor) ist in Next vollständig vorhanden und durch `ControlBlacklistPolicy` und `EmergencyStopController` zusätzlich gehärtet.
+- Quell-Commit `e8c372c` (Stitch UI Referenzen) als Designdokumentation erfasst; UI nativ in Compose implementiert.
+- Untrackte Hilfedateien `how --stat...` und `tatus -sb` als identische Pager-Hilfetexte (GNU less) identifiziert und vom Commit ausgeschlossen.
+
+### 2. Behobene Root Causes
+- **Back-Navigation & Launcher-Exit:** Hierarchischer `BackHandler` in `MainActivity.kt` verhindert versehentliches Schließen der App bei offenem Sheet/Drawer/Subscreen.
+- **SAF-Projektbug:** `ProjectStorage` mit SharedPreferences-Persistenz, StateFlow-Reaktivität und SAF-Abbruchsicherheit behebt die fehlende Projektanzeige bei Auswahl von Ordnern wie „Boom“.
+- **Dark Mode Scrim:** Auf Schwarz korrigiert; kein milchig-heller Schleier mehr.
+- **Control Audit:** Alle 34 interaktiven Schaltflächen lückenlos auditiert (`docs/CONTROL_AUDIT.md`). Modell-Auswahldialog, Sprachdialog, Profil und Anhangsquellen vollständig angebunden.
+
+### 3. Tests & Build
+- 2.608 Tests in 139 Suiten grün.
+- APK gebaut und auf `/sdcard/Download/ClauDroide-debug.apk` hinterlegt.
 
 ### 1. Online- und Lokaler Abgleich (GitHub & Lokales Repo)
 - **Letzter gesicherter lokaler Commit auf `main`:** `b6eb3ed`

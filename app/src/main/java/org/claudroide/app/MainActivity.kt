@@ -36,8 +36,10 @@ import org.claudroide.app.core.navigation.RecentChat
 import org.claudroide.app.feature.chat.ChatScreen
 import org.claudroide.app.feature.chat.ChatViewModel
 import org.claudroide.app.feature.project.ProjectScreen
-import org.claudroide.app.feature.project.ProjectSaver
-import org.claudroide.app.feature.project.ProjectSaverProvider
+import androidx.activity.compose.BackHandler
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.claudroide.app.feature.chat.ConversationManager
+import org.claudroide.app.feature.project.ProjectStorage
 import org.claudroide.app.feature.project.PersistentFolderAccess
 import org.claudroide.app.feature.project.PersistentFolderAccessProvider
 import org.claudroide.app.feature.project.ContentResolverUriAvailability
@@ -54,7 +56,7 @@ class MainActivity : ComponentActivity() {
         val persistentAccess = PersistentFolderAccess()
         val uriAvailability = ContentResolverUriAvailability(this)
         StartupDiagnostics.markPhase(StartupDiagnostics.Phase.PROJECT_STORAGE_INIT)
-        ProjectSaverProvider.initialize(this, persistentAccess, uriAvailability)
+        ProjectStorage.get(this)
         PersistentFolderAccessProvider.initialize(persistentAccess)
 
         StartupDiagnostics.markPhase(StartupDiagnostics.Phase.COMPOSE_INIT)
@@ -78,18 +80,57 @@ fun AppShell() {
     val chatViewModel: ChatViewModel = viewModel(
         factory = remember(context) { ChatViewModel.provideFactory(context) }
     )
+    val chatUiState by chatViewModel.uiState.collectAsStateWithLifecycle()
+
+    // ── Hierarchical Back Navigation Handler ──
+    // 1. If attachment bottom sheet is open, close it first
+    BackHandler(enabled = chatUiState.showAttachmentSheet) {
+        chatViewModel.onDismissAttachmentSheet()
+    }
+
+    // 2. If model selection dialog is open, close it
+    BackHandler(enabled = chatUiState.showModelDialog) {
+        chatViewModel.onDismissModelDialog()
+    }
+
+    // 3. If navigation drawer is open, close it
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
+    }
+
+    // 4. If on a sub-destination (PROJECTS or SETTINGS), return to CHAT
+    BackHandler(
+        enabled = currentDestination != AppDestination.CHAT &&
+                !drawerState.isOpen &&
+                !chatUiState.showAttachmentSheet &&
+                !chatUiState.showModelDialog
+    ) {
+        currentDestination = AppDestination.CHAT
+    }
 
     LaunchedEffect(Unit) {
         StartupDiagnostics.markPhase(StartupDiagnostics.Phase.FIRST_FRAME)
         StartupDiagnostics.markPhase(StartupDiagnostics.Phase.READY)
     }
 
-    // Mock recent chats - in real app, load from ConversationManager
-    val recentChats = remember {
+    // Dynamic recent chats wired to active session
+    val recentChats = remember(chatUiState.conversationId, chatUiState.messages.size) {
+        val currentTitle = if (chatUiState.messages.isNotEmpty()) {
+            ConversationManager.autoGenerateTitle(chatUiState.messages.first().text)
+        } else {
+            "Aktuelle Unterhaltung"
+        }
+        val currentSnippet = chatUiState.messages.lastOrNull()?.text ?: "Neu gestartet"
+
         listOf(
-            RecentChat("1", "Foreground Service Audio", "Implementing background audio...", System.currentTimeMillis()),
-            RecentChat("2", "Inspect Android Architecture", "Jetpack Compose & Coroutines", System.currentTimeMillis() - 86400000),
-            RecentChat("3", "Debug Stack Trace Room DB", "Database migration issues", System.currentTimeMillis() - 172800000),
+            RecentChat(
+                id = chatUiState.conversationId,
+                title = currentTitle,
+                preview = currentSnippet,
+                timestamp = System.currentTimeMillis()
+            ),
+            RecentChat("1", "Foreground Service Audio", "Implementing background audio...", System.currentTimeMillis() - 86400000),
+            RecentChat("2", "Inspect Android Architecture", "Jetpack Compose & Coroutines", System.currentTimeMillis() - 172800000),
         )
     }
 
@@ -111,6 +152,15 @@ fun AppShell() {
                         scope.launch { drawerState.close() }
                     },
                     onClose = {
+                        scope.launch { drawerState.close() }
+                    },
+                    onChatSelect = { chat ->
+                        chatViewModel.selectConversation(chat.id, chat.title)
+                        currentDestination = AppDestination.CHAT
+                        scope.launch { drawerState.close() }
+                    },
+                    onProfileClick = {
+                        chatViewModel.onProfileClick()
                         scope.launch { drawerState.close() }
                     },
                     recentChats = recentChats,

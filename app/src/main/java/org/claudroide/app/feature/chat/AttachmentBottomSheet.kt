@@ -104,6 +104,7 @@ fun AttachmentBottomSheet(
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        scrimColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.6f),
         dragHandle = null,
         modifier = modifier,
     ) {

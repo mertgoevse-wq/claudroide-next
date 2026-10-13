@@ -55,7 +55,7 @@ public object CcTheme {
         @Composable @ReadOnlyComposable get() = LocalCcTokens.current
 }
 
-private fun colorSchemeOf(c: CcColorScheme, base: ColorScheme): ColorScheme = base.copy(
+internal fun colorSchemeOf(c: CcColorScheme, base: ColorScheme): ColorScheme = base.copy(
     primary = c.accent,
     onPrimary = c.onAccent,
     primaryContainer = c.accentSubtle,
@@ -81,7 +81,7 @@ private fun colorSchemeOf(c: CcColorScheme, base: ColorScheme): ColorScheme = ba
     outlineVariant = c.borderStrong,
     error = c.danger,
     onError = c.onAccent,
-    scrim = c.textPrimary,
+    scrim = Color(0xFF000000), // Pure black scrim ensures proper modal contrast in both light and dark themes
 )
 
 /**

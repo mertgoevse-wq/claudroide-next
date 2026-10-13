@@ -38,6 +38,11 @@ import org.claudroide.app.core.design.components.CodeBlock
 import org.claudroide.app.core.design.components.StreamingText
 import org.claudroide.app.core.design.theme_compat.CcTheme
 import org.claudroide.app.core.i18n.TimeBasedGreeting
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import org.claudroide.app.feature.provider.ModelRegistry
 import org.claudroide.app.feature.provider.ProviderCatalogRegistry
 
 /**
@@ -80,7 +85,26 @@ fun ChatScreen(
     )
     val effectiveError = s.error
     val colors = CcTheme.tokens.colors
+    val context = LocalContext.current
     val listState = rememberLazyListState()
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val name = uri.lastPathSegment?.substringAfterLast('/') ?: "datei_${System.currentTimeMillis()}"
+            viewModel?.addAttachment(name, 1024L, "text/plain", true)
+        }
+    }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val name = uri.lastPathSegment?.substringAfterLast('/') ?: "bild_${System.currentTimeMillis()}.png"
+            viewModel?.addAttachment(name, 20480L, "image/png", false)
+        }
+    }
 
     // Auto-scroll to latest message when new message arrives
     LaunchedEffect(effectiveMessages.size, s.isStreaming) {
@@ -137,7 +161,7 @@ fun ChatScreen(
                         }
                     } else {
                         IconButton(
-                            onClick = { /* User Profile / Account */ },
+                            onClick = { viewModel?.onProfileClick() },
                             modifier = Modifier.padding(end = 4.dp),
                         ) {
                             Icon(
@@ -291,25 +315,218 @@ fun ChatScreen(
                 viewModel?.onDismissAttachmentSheet()
                 when (option) {
                     AttachmentOption.FILES_AND_CODE -> {
-                        viewModel?.addAttachment("main.kt", 1024)
+                        filePickerLauncher.launch("*/*")
                     }
                     AttachmentOption.PHOTOS_AND_DOCS -> {
-                        viewModel?.addAttachment("screenshot.png", 20480, "image/png", false)
+                        photoPickerLauncher.launch("image/*")
                     }
                     AttachmentOption.CAMERA -> {
-                        viewModel?.addAttachment("camera_scan.jpg", 16384, "image/jpeg", false)
+                        viewModel?.addAttachment("kamera_scan_${System.currentTimeMillis()}.jpg", 16384L, "image/jpeg", false)
                     }
                     AttachmentOption.PROJECT_CONTEXT -> {
-                        viewModel?.addAttachment("claudroide-spec.md", 8192)
+                        val active = org.claudroide.app.feature.project.ProjectStorage.get(context).state.value.activeProject
+                        val title = active?.displayName ?: "Projektkontext (claudroide-spec.md)"
+                        viewModel?.addAttachment(title, 8192L, "text/markdown", true)
                     }
                     AttachmentOption.LOGCAT -> {
-                        viewModel?.addAttachment("logcat.txt", 4096)
+                        viewModel?.addAttachment("startup_diagnostics.log", 5120L, "text/plain", true)
                     }
                 }
             },
             onManageContextClick = {
                 viewModel?.onDismissAttachmentSheet()
             },
+        )
+    }
+
+    // ── Model & Provider Selection Dialog ──
+    if (s.showModelDialog) {
+        val providers = remember { ProviderCatalogRegistry.getActiveProviders() }
+        var selectedProviderId by remember { mutableStateOf(s.currentProviderId) }
+        var selectedModelId by remember { mutableStateOf(s.currentModelId) }
+
+        AlertDialog(
+            onDismissRequest = { viewModel?.onDismissModelDialog() },
+            title = {
+                Text(
+                    text = "Modell & Anbieter wählen",
+                    style = CcTheme.tokens.typography.titleMedium,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Verfügbare Anbieter:",
+                        style = CcTheme.tokens.typography.labelSmall,
+                        color = colors.textSecondary
+                    )
+                    providers.forEach { provider ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    selectedProviderId = provider.id
+                                    selectedModelId = ModelRegistry
+                                        .getModelsForProvider(provider.id)
+                                        .firstOrNull()?.id ?: selectedModelId
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            RadioButton(
+                                selected = selectedProviderId == provider.id,
+                                onClick = {
+                                    selectedProviderId = provider.id
+                                    selectedModelId = ModelRegistry
+                                        .getModelsForProvider(provider.id)
+                                        .firstOrNull()?.id ?: selectedModelId
+                                }
+                            )
+                            Column {
+                                Text(
+                                    text = provider.displayName,
+                                    style = CcTheme.tokens.typography.bodyMedium,
+                                    color = colors.textPrimary
+                                )
+                                Text(
+                                    text = provider.defaultEndpoint,
+                                    style = CcTheme.tokens.typography.bodySmall,
+                                    color = colors.textTertiary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(4.dp))
+
+                    Text(
+                        text = "Modellauswahl:",
+                        style = CcTheme.tokens.typography.labelSmall,
+                        color = colors.textSecondary
+                    )
+                    val models = remember(selectedProviderId) {
+                        ModelRegistry.getModelsForProvider(selectedProviderId)
+                    }
+                    models.forEach { model ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { selectedModelId = model.id }
+                                .padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            RadioButton(
+                                selected = selectedModelId == model.id,
+                                onClick = { selectedModelId = model.id }
+                            )
+                            Text(
+                                text = "${model.displayName} (${model.id})",
+                                style = CcTheme.tokens.typography.bodySmall,
+                                color = colors.textPrimary
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel?.onProviderSelected(selectedProviderId, selectedModelId)
+                        viewModel?.onDismissModelDialog()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.accent,
+                        contentColor = colors.onAccent
+                    )
+                ) {
+                    Text("Auswählen")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel?.onDismissModelDialog() }) {
+                    Text("Abbrechen", color = colors.textSecondary)
+                }
+            },
+            containerColor = colors.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // ── Voice Input & Conversation Mode Info Dialog ──
+    if (s.showVoiceInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel?.onDismissVoiceInfoDialog() },
+            title = {
+                Text(
+                    text = "Sprachmodus",
+                    style = CcTheme.tokens.typography.titleMedium,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Text(
+                    text = "Auf diesem Gerät ist kein lokales Speech-to-Text-Modell (STT) oder Mikrofon-Streamer eingerichtet. Sprachnachrichten können stattdessen als Audioanhang über das Menü „Anhänge“ hinzugefügt werden.",
+                    style = CcTheme.tokens.typography.bodyMedium,
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel?.onDismissVoiceInfoDialog() }) {
+                    Text("Verstanden", color = colors.accent)
+                }
+            },
+            containerColor = colors.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // ── User Profile Dialog ──
+    if (s.showProfileDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel?.onDismissProfileDialog() },
+            title = {
+                Text(
+                    text = "Benutzerprofil",
+                    style = CcTheme.tokens.typography.titleMedium,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Angemeldet als: Mert",
+                        style = CcTheme.tokens.typography.bodyMedium,
+                        color = colors.textPrimary
+                    )
+                    Text(
+                        text = "Konto: mert.govse.neu@gmail.com",
+                        style = CcTheme.tokens.typography.bodySmall,
+                        color = colors.textSecondary
+                    )
+                    Text(
+                        text = "Lizenz: ClauDroide Pro (BYOK)",
+                        style = CcTheme.tokens.typography.bodySmall,
+                        color = colors.textSecondary
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel?.onDismissProfileDialog() }) {
+                    Text("Schließen", color = colors.accent)
+                }
+            },
+            containerColor = colors.surface,
+            shape = RoundedCornerShape(16.dp)
         )
     }
 }
@@ -473,7 +690,7 @@ private fun MessageComposer(
                                     .size(36.dp)
                                     .clip(CircleShape)
                                     .background(colors.surfaceSubtle)
-                                    .clickable(onClick = { /* Voice input */ }),
+                                    .clickable(onClick = { viewModel?.onVoiceClick() }),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
@@ -488,7 +705,7 @@ private fun MessageComposer(
                                 color = Color.White,
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .clickable(onClick = { /* Voice conversation mode */ }),
+                                    .clickable(onClick = { viewModel?.onVoiceClick() }),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(

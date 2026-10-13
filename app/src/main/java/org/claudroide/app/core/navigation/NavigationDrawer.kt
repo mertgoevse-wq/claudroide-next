@@ -71,6 +71,10 @@ fun NavigationDrawer(
     userEmail: String = "mert.govse.neu@gmail.com",
     isPro: Boolean = true,
     currentDestination: AppDestination = AppDestination.CHAT,
+    onChatSelect: (RecentChat) -> Unit = {},
+    onProfileClick: () -> Unit = {},
+    onCodeMcpClick: () -> Unit = {},
+    onArtifactsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = CcTheme.tokens.colors
@@ -127,6 +131,7 @@ fun NavigationDrawer(
                 label = stringResource(R.string.nav_drawer_code_mcp),
                 selected = false,
                 onClick = {
+                    onCodeMcpClick()
                     onClose()
                 },
             )
@@ -135,6 +140,7 @@ fun NavigationDrawer(
                 label = stringResource(R.string.nav_drawer_artifacts),
                 selected = false,
                 onClick = {
+                    onArtifactsClick()
                     onClose()
                 },
             )
@@ -181,6 +187,7 @@ fun NavigationDrawer(
                     RecentChatRow(
                         title = chat.title,
                         onClick = {
+                            onChatSelect(chat)
                             onClose()
                         },
                     )
@@ -196,11 +203,16 @@ fun NavigationDrawer(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            // User Avatar ("MZ")
+            // User Avatar ("MZ") - Interactive, opens profile info
             Box(
                 modifier = Modifier
                     .size(42.dp)
-                    .background(colors.accent, CircleShape),
+                    .clip(CircleShape)
+                    .background(colors.accent)
+                    .clickable {
+                        onProfileClick()
+                        onClose()
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

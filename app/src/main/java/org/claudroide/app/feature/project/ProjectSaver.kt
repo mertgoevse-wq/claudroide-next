@@ -168,3 +168,29 @@ class ContentResolverUriAvailability(
         }
     }
 }
+
+/**
+ * Provider for ProjectSaver instance - maintained for backwards compatibility.
+ */
+object ProjectSaverProvider {
+    @Volatile
+    private var instance: ProjectSaver? = null
+
+    fun initialize(context: Context, persistentAccess: PersistentFolderAccess, uriAvailability: UriAvailability) {
+        instance = ProjectSaver(context, persistentAccess, uriAvailability)
+    }
+
+    fun get(context: Context? = null): ProjectSaver {
+        return instance ?: synchronized(this) {
+            instance ?: run {
+                if (context != null) {
+                    val access = PersistentFolderAccessProvider.get()
+                    val avail = ContentResolverUriAvailability(context)
+                    ProjectSaver(context, access, avail).also { instance = it }
+                } else {
+                    error("ProjectSaver not initialized. Call initialize() first.")
+                }
+            }
+        }
+    }
+}
