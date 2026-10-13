@@ -7,7 +7,17 @@
 
 **Gerät (selbst gemessen):** SM-A566B, Termux/Debian/PRoot. `adb devices` zeigt **kein** Gerät (PRoot Sandbox). APK direkt auf `/sdcard/Download/` bereitgestellt.
 
-**GitHub Remotes:**
+**Stand:** 2026-10-13 (achtunddriBzigste Sitzung — Brand-Asset-Synchronisation & Geometry-Test)
+
+**Status:** **135 von 135 Aufgaben `done`**, 0 offen. Kanonische Codebasis `claudroide-next` mit Quellprojekt `claudroide` abgeglichen und konsolidiert (`docs/INTEGRATION_MAP.md`). Alle 34 UI-Controls verdrahtet (`docs/CONTROL_AUDIT.md`).
+
+**Teststand (selbst gemessen):** `./gradlew :app:testDebugUnitTest --rerun-tasks` -> BUILD SUCCESSFUL, **2.608 Tests in 139 Suiten, 0 Fehler, 0 Bersprungen**. `./gradlew :app:assembleDebug` -> BUILD SUCCESSFUL. APK: `app/build/outputs/apk/debug/app-debug.apk` 23.331.258 Bytes, SHA-256 `49be1f3eb260e80acd35edc426ff8024547f4f98e4c6a63642e3d06c157fe871`. `python3 tools/secret_gate.py .` -> 0 Treffer, exit 0. `python3 tools/sync_frontmatter.py --check` -> OK. `git diff --check` -> OK.
+
+**Brand-Asset-Fix (Sitzung 38):** `tools/brand.py` regenerierte das Markenzeichen am 2026-10-13, aber die verschliffenen WebP-Assets (`claudroide_mark.webp`, `claudroide_banner.webp`) waren nicht erneuert (vom 9.10.). Regeneriert aus den frischen PNGs; beide innerhalb des 50 KB Caps. Neuer `tools/test_icon_geometry.py` pinnt die in `app_icon.py` duplizierte `_face_geometry()` an die in `brand.mark()` liegenden Fraktionen. Commit `0ec4f9a` gepusht auf `next/feat/claudroide-next-architecture`.
+
+**GerBt (selbst gemessen):** SM-A566B, Termux/Debian/PRoot. `adb devices` zeigt **kein** GerBt (PRoot Sandbox). Kein echter GerBttest — wie in allen Sitzungen dokumentiert.
+
+
 - Privates Ziel: `next` → `https://github.com/mertgoevse-wq/claudroide-next.git`
 - Ursprüngliches Repo: `origin` → `https://github.com/mertgoevse-wq/claudroide.git` (niemals dorthin pushen).
 
