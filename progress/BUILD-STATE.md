@@ -24,4 +24,24 @@
 - Kanonisches Ziel: `next` → `https://github.com/mertgoevse-wq/claudroide-next.git` — **PUBLIC**, Default-Branch: `feat/claudroide-next-architecture`.
 - Ursprüngliches Repo: `origin` → `https://github.com/mertgoevse-wq/claudroide.git` — niemals dorthin pushen.
 
-**Letzte sichere Git-Referenz:** `920d930` auf `feat/claudroide-next-architecture`.
+**Letzte sichere Git-Referenz:** `7b71662` auf `feat/claudroide-next-architecture`.
+
+**Phase 1+2-Checkpoint (2026-10-14, Sitzung 41):**
+- Repository verifiziert: Branch `feat/claudroide-next-architecture`, Commit `7b71662`, up-to-date mit `next/feat/claudroide-next-architecture`.
+- Unstage Änderung: `AndroidKeystoreKeyVault.kt` — `@RequiresApi`-Annotationen zu `Api28Helper` (korrekt, 8 Tests grün).
+- Release-Signing-Konfiguration erstellt und implementiert:
+  - Keystore generiert außerhalb des Repos: `/home/mert/claudroide-keystore/claudroide-release.keystore` (RSA 2048-bit, 10000 Tage Gültigkeit, SHA256withRSA, bis 2054-03-01).
+  - `keystore.properties` im Projekt-Root angelegt (in `.gitignore`, nie committed).
+  - `app/build.gradle.kts` erweitert: `signingConfigs { create("release") { ... } }` + `signingConfig = signingConfigs.getByName("release")` im `release`-Build-Typ.
+  - `.gitignore` um `keystore.properties` und `*.release.keystore` erweitert.
+- **`:app:assembleRelease` BUILD SUCCESSFUL** in 8m 14s, 46 Tasks (14 executed, 32 up-to-date).
+  - Release-APK: `app/build/outputs/apk/release/app-release.apk`, **3.9 MB** (83% kleiner als Debug-APK mit 23 MB).
+  - SHA-256: `29616268823ebc66c992784cd4e108bdd8a51a781414de204e24358e0513af6d`.
+  - Signatur verifiziert: v2 (APK Signature Scheme v2) **verified**, 1 signer, `apksigner` output: `Verifies`.
+  - R8-ProGuard-Audit: Tink-Klassen (`com.google.crypto.tink.Config` uvm.) korrekt in `seeds.txt` behalten. 39 Warnings zu impliziten Default-Constructor-Keep-Regeln in Drittanbieter-Consumer-Proguard-Files — **nicht kritisch**, beeinträchtigen keine Funktionalität.
+- Unit-Tests: **2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen** (identisch zum Baseline-Stand).
+- `python3 tools/secret_gate.py .` → 0 Treffer (exit 0).
+- `python3 tools/sync_frontmatter.py --check` → OK (135/135 Tasks konsistent).
+- `git diff --check` → sauber.
+- APK nach `/sdcard/Download/ClauDroide-release.apk` kopiert; SHA-256 identisch.
+- **Nächster Schritt:** R8/ProGuard-Audit vertiefen — Lint-Vital-Bericht und Mapping-Analyse für verwaiste oder überbeschränkte Klassen. Dann AAB-Build (`:app:bundleRelease`) vorbereiten.

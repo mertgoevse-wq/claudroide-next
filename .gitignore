@@ -15,6 +15,9 @@ venv/
 *.pem
 *.key
 *.token
+# Signing (generated outside the repo tree; properties file references host paths)
+keystore.properties
+*.release.keystore
 
 # OS & Editors
 .DS_Store
