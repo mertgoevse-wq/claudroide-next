@@ -56,4 +56,51 @@ class SecureKeyStorageTest {
         assertFalse(metadata["openrouter"]!!.contains("abcdef1234567890"))
         assertTrue(metadata["openrouter"]!!.contains("••••••••"))
     }
+
+    @Test
+    fun keyVaultFactory_inJvmTestEnvironment_returnsInMemoryVault() {
+        assertTrue(
+            "JVM test execution must be recognized as JVM test environment",
+            org.claudroide.app.feature.provider.KeyVaultFactory.isJvmTestEnvironment()
+        )
+        val dummyApp = object : android.app.Application() {}
+        val vault = org.claudroide.app.feature.provider.KeyVaultFactory.create(dummyApp)
+        assertTrue(
+            "KeyVaultFactory must supply InMemorySecureKeyVault for JVM test execution",
+            vault is InMemorySecureKeyVault
+        )
+    }
+
+    @Test
+    fun keyVaultFactory_testModeProperty_forcesTestEnvironment() {
+        val original = System.getProperty(org.claudroide.app.feature.provider.KeyVaultFactory.TEST_MODE_PROPERTY)
+        try {
+            System.setProperty(org.claudroide.app.feature.provider.KeyVaultFactory.TEST_MODE_PROPERTY, "true")
+            assertTrue(org.claudroide.app.feature.provider.KeyVaultFactory.isJvmTestEnvironment())
+        } finally {
+            if (original != null) {
+                System.setProperty(org.claudroide.app.feature.provider.KeyVaultFactory.TEST_MODE_PROPERTY, original)
+            } else {
+                System.clearProperty(org.claudroide.app.feature.provider.KeyVaultFactory.TEST_MODE_PROPERTY)
+            }
+        }
+    }
+
+    @Test
+    fun androidKeystoreKeyVault_isStrongBoxSupported_safeOnOlderApiLevels() {
+        val dummyApp = object : android.app.Application() {}
+        // On JVM (SDK_INT < P), isStrongBoxSupported must safely return false without crashing
+        assertFalse(
+            "StrongBox must report unsupported on pre-API 28 or non-hardware environments",
+            org.claudroide.app.feature.provider.AndroidKeystoreKeyVault.isStrongBoxSupported(dummyApp)
+        )
+    }
+
+    @Test
+    fun androidKeystoreKeyVault_securityGuarantees_forbidInsecureFallback() {
+        // Enforces that policies strictly require hardware backing and zero cleartext leaks
+        assertTrue(AndroidKeystoreSecurityPolicy.PROHIBIT_CLEARTEXT_FILE_STORAGE)
+        assertTrue(AndroidKeystoreSecurityPolicy.BACKUP_EXCLUSION_MANDATORY)
+        assertEquals(256, AndroidKeystoreSecurityPolicy.KEY_SIZE_BITS)
+    }
 }

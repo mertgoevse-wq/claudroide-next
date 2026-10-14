@@ -19,7 +19,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Phase-Active%20Development-yellow" alt="Phase" />
   <img src="https://img.shields.io/badge/Tasks-135%20%2F%20135%20Done-success" alt="Tasks" />
-  <img src="https://img.shields.io/badge/Tests-2608%20passing-success" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-2612%20passing-success" alt="Tests" />
   <img src="https://img.shields.io/badge/Target-Galaxy%20A56%205G-orange" alt="Device" />
   <img src="https://img.shields.io/badge/Repo-public-success" alt="Repo" />
 </p>
@@ -180,7 +180,7 @@ flowchart LR
 
 - **Mark:** [`assets/brand/mark-1024.png`](assets/brand/mark-1024.png), with `-256` and `-96` variants. Also generated straight into the app as the adaptive launcher icon (`app/src/main/res/mipmap-*/ic_launcher_foreground.png`, plus a `monochrome` layer for Android 13+ themed icons).
 - **Banner:** [`assets/brand/banner.png`](assets/brand/banner.png) — 1376x768, 16:9. The wordmark is real Inter, so the product name is spelled correctly by construction.
-- **In the app:** both ship as WebP derived from those PNG sources — `res/drawable-nodpi/claudroide_mark.webp` (13 KB) and `claudroide_banner.webp` (15 KB, down from 112 KB). The PNGs stay in the repo as the lossless source; the 50 KB cap applies to what goes on the device, and `BrandAssetContractTest` enforces it per shipped file.
+- **In the app:** both ship as WebP derived from those PNG sources — `res/drawable-nodpi/claudroide_mark.webp` (31 KB) and `claudroide_banner.webp` (27 KB, down from 114 KB). The PNGs stay in the repo as the lossless source; the 50 KB cap applies to what goes on the device, and `BrandAssetContractTest` enforces it per shipped file.
 - **Design:** an Android dome in `#3DDC84` wearing a Claude-grammar burst as its crown. The two rays at ±26° are the droid's antennae **and** two rays of the burst — the same strokes serve both systems, so neither half can be deleted without breaking the other. That is the "no subordinate symbol" requirement expressed as geometry rather than as a caption.
 - Drawn as exact vector geometry by [`tools/brand.py`](tools/brand.py), not by an image model: the wordmark has to spell "ClauDroide", and diffusion models misspell wordmarks. The banner and the launcher icon import the same geometry, so they cannot drift apart.
 - Binary integrity enforced by CI: no SVG permitted in `assets/` (`.github/workflows/repo-health.yml`). The SVGs under `assets/brand/.build/` are build input, not shipped assets. Source files under `assets/brand/` are uncapped; the per-image 50 KB cap applies to shipped app resources and is test-enforced.

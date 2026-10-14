@@ -72,9 +72,10 @@ which is why generating the themed icon was worth doing at all.
 ## Regenerating
 
 ```sh
-python3 tools/brand.py     # mark-1024 / -256 / -96
-python3 tools/banner.py    # banner.png
-python3 tools/app_icon.py  # all five mipmap densities
+python3 tools/brand.py         # mark-1024 / -256 / -96
+python3 tools/brand_banner.py   # banner.png
+python3 tools/app_icon.py      # all five mipmap densities
+python3 tools/generate_webp.py # claudroide_mark.webp & claudroide_banner.webp
 ```
 
 Requires `rsvg-convert` and the Inter family installed for fontconfig.

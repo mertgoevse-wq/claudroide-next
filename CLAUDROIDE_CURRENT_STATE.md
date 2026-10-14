@@ -93,7 +93,7 @@
 ## 7. Was als Nächstes automatisch passiert
 
 1. P0 — Vertrauenswürdige Basis: README-Badges korrigiert, BUILD-STATE/CLAUDROIDE_CURRENT_STATE synchronisiert, CI-Trigger committet und verifiziert.
-2. Brand-Asset-Korrektur: WebP-Assets (`claudroide_mark.webp`, `claudroide_banner.webp`) sind veraltet (114 KB, 149 KB — über dem 50 KB Cap). Regenerierung aus frischen PNGs geplant.
+2. Brand-Asset-Status: WebP-Assets (`claudroide_mark.webp` 31 KB, `claudroide_banner.webp` 27 KB) sind regeneriert und verifiziert (beide unter dem 50 KB Cap, reproduzierbar via `tools/generate_webp.py`).
 3. Dokumentations-Grafiken: Infografik "How the Autonomous Loop Works", Architecture-Diagramm, Assets Pipeline — benötigen Media Bridge (AGY nicht konfiguriert, siehe Blocker).
 4. Anhalten nur bei: fehlendem Nutzerentscheid, fehlendem Schlüssel/Gerät (dann weiterbauen und Lücke offen markieren), oder zwei gescheiterten Versuchen.
 
