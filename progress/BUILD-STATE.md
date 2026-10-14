@@ -24,4 +24,4 @@
 - Kanonisches Ziel: `next` → `https://github.com/mertgoevse-wq/claudroide-next.git` — **PUBLIC**, Default-Branch: `feat/claudroide-next-architecture`.
 - Ursprüngliches Repo: `origin` → `https://github.com/mertgoevse-wq/claudroide.git` — niemals dorthin pushen.
 
-**Letzte sichere Git-Referenz:** `e482179` auf `feat/claudroide-next-architecture`.
+**Letzte sichere Git-Referenz:** `920d930` auf `feat/claudroide-next-architecture`.
