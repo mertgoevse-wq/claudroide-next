@@ -2,7 +2,7 @@ name: repo-health
 
 on:
   push:
-    branches: [main]
+    branches: [feat/claudroide-next-architecture]
   pull_request:
   workflow_dispatch:
 

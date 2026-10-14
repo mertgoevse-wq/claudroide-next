@@ -19,9 +19,9 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Phase-Active%20Development-yellow" alt="Phase" />
   <img src="https://img.shields.io/badge/Tasks-135%20%2F%20135%20Done-success" alt="Tasks" />
-  <img src="https://img.shields.io/badge/Tests-2530%20passing-success" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-2608%20passing-success" alt="Tests" />
   <img src="https://img.shields.io/badge/Target-Galaxy%20A56%205G-orange" alt="Device" />
-  <img src="https://img.shields.io/badge/Repo-private-success" alt="Repo" />
+  <img src="https://img.shields.io/badge/Repo-public-success" alt="Repo" />
 </p>
 
 ClauDroide is an independent native Android application for AI-assisted software engineering and project management (inspired by the Claude Code CLI paradigm, but with an independent brand, clean-room architecture, and mobile-native Compose UI). Primary hardware benchmark: Samsung Galaxy A56 5G. This repository contains the complete specification, 135 machine-readable task briefs, and the deterministic autonomous engineering loop.
@@ -35,7 +35,7 @@ ClauDroide is an independent native Android application for AI-assisted software
 ## Quickstart in Claude Code
 
 ```bash
-cd /home/mert/claudroide   # Navigate to project root
+cd /home/mert/claudroide-next   # Navigate to project root
 claude                      # Launch Claude Code (CLAUDE.md loads automatically)
 ```
 
@@ -47,12 +47,12 @@ Within Claude Code REPL:
 | `Baue weiter bis zum finalen Produkt` | Starts the autonomous engineering loop from `CLAUDE.md`: select earliest pending task with fulfilled dependencies → implement → test → checkpoint → commit & push. Pauses only on safety gates or blockers. |
 | `Baue Aufgabe 017` | Implements a single specific task in isolation. |
 
-Prerequisites: `git` and verified private remote `mertgoevse-wq/claudroide`. The six globally installed skills (`swarm-planner`, `parallel-task`, `adaptive`, `android-profiler`, `android-permissions-security`, `testing-setup`) are verified and loaded per task.
+Prerequisites: `git` and verified public remote `mertgoevse-wq/claudroide-next`. The six globally installed skills (`swarm-planner`, `parallel-task`, `adaptive`, `android-profiler`, `android-permissions-security`, `testing-setup`) are verified and loaded per task.
 
 <details>
 <summary><b>Resuming Work After an Interruption or Crash</b></summary>
 
-1. Restart device / Termux environment and enter `/home/mert/claudroide`.
+1. Restart device / Termux environment and enter `/home/mert/claudroide-next`.
 2. Launch `claude`.
 3. Type `/claudroide-resume`.
 

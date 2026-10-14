@@ -3,7 +3,7 @@ name: build-apk
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [feat/claudroide-next-architecture]
     paths:
       - 'app/**'
       - 'build.gradle.kts'

@@ -13,11 +13,11 @@
 
 | Feld | Wert |
 |---|---|
-| **Stand** | `2026-10-09` (Planung abgeschlossen — Bau noch nicht begonnen; OPTIMIZE-FIRST ausgeführt) |
-| **Aktuelle Phase** | Phase 0 (Bestandsaufnahme) |
-| **Nächster Task** | **Task `0.1`** — Projektgerüst + Doku-Ebenen anlegen (`docs/REQUIREMENTS.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `SECURITY.md` aus der Spec ableiten) — **nicht** `OPTIMIZE-FIRST.md` mehr (bereits ausgeführt) |
-| **Letzter Schritt in diesem Lauf** | OPTIMIZE-FIRST ausgeführt: Widersprüche geklärt — `docs/SOURCE_REUSE_MATRIX.md` angelegt (Spec §10), `docs/TASKS.md` Task 0.1 um SOURCE_REUSE_MATRIX.md ergänzt, `docs/DECISIONS.md` um Anlage-Eintrag ergänzt, `CLAUDROIDE_CURRENT_STATE.md` und `progress/BUILD-STATE.md` aktualisiert; Task 0.7 (Skills-Index) bleibt erledigt |
-| **Letzte abgeschlossene Tasks** | keine (nur Planung) |
+| **Stand** | `2026-10-14` (135/135 Tasks done; Block A+B abgeschlossen) |
+| **Aktuelle Phase** | Implementation & Verification (alle 135 Tasks erledigt) |
+| **Nächster Task** | Produktweiterentwicklung außerhalb des Task-Systems: P0 — Vertrauenswürdige Basis (README-Korrekturen, Dokumentationskonsistenz, CI-Verifikation) |
+| **Letzter Schritt in diesem Lauf** | Block A (Reality Check) & Block B (APK-Build, Tests, Delivery) abgeschlossen: 2.608 Tests grün, APK gebaut und nach `/sdcard/Download/` kopiert, CI-Trigger korrigiert, README/Dokumentation auf Messwerte aktualisiert. |
+| **Letzte abgeschlossene Tasks** | Alle 135 Tasks (`done`) — kanonische Codebasis `claudroide-next` mit Quellprojekt `claudroide` abgeglichen |
 | **Läuft gerade** | nichts — kein Build, kein Shell-Job, kein Subagent |
 | **Not-Aus-Status** | nicht ausgelöst |
 | **Nachweis-Datei** | `progress/BUILD-STATE.md` (technischer Zwilling dieser Datei) |
@@ -28,7 +28,12 @@
 
 | Task | Ergebnis | Beleg (Test/Screenshot/Messung) | Datum |
 |---|---|---|---|
-| — | noch nichts | — | — |
+| 001–135 | Alle 135 Tasks `done` | `sync_frontmatter.py --check` → OK | 2026-10-14 |
+| Tests | 2.608 Tests, 0 Fehler, 0 übersprungen | XML-Auswertung aller 139 Suiten | 2026-10-14 |
+| Build | `./gradlew assembleDebug` → BUILD SUCCESSFUL | 23.331.258 Bytes APK | 2026-10-13 |
+| APK-Delivery | Kopiert nach `/sdcard/Download/ClauDroide-debug.apk`, `.sha256`-Sidecar | SHA-256 `49be1f3e...` (identisch mit Build-Output) | 2026-10-14 |
+| CI-Trigger | `build-apk.yml` & `repo-health.yml` auf `[feat/claudroide-next-architecture]` | Git-Diff verifiziert | 2026-10-14 |
+| Brand-Assets | mark-1024/256/96.png, banner.png, ic_launcher in 5 Dichten | `tools/test_icon_geometry.py` → 4 Assertions grün | 2026-10-13 |
 
 **Regel:** Eine Zeile darf nur hier stehen, wenn der Beleg existiert und im `BUILD-STATE.md` verlinkt ist. Keine Wunschliste.
 
@@ -39,10 +44,7 @@
 | Blocker | Seit | Versuche | Warum noch offen | Nächster Versuch |
 |---|---|---|---|---|
 | Kein Handy per Kabel (`adb devices` leer) | 2026-10-08 | 1 | Gerätebeweise nicht möglich | Nutzer schließt Gerät an oder aktiviert kabellose Fehlersuche |
-| Testzahl widersprüchlich (2535 vs. 2530 in Repo-Dokumenten) | 2026-10-08 | 0 | Selbstmessung steht aus | Task 0.3 |
 | NPU-Zugriff unbelegt | 2026-10-08 | 0 | Forschungsblock Phase 9 | Task 9.1 |
-| Vor dem ersten Bau: noch nicht existierende Referenz-Dateien (CLAUDE.md, `progress/BUILD-STATE.md`, `docs/DECISIONS.md`) sind **jetzt angelegt**; `docs/REQUIREMENTS.md`/`ARCHITECTURE.md`/`ROADMAP.md`/`SECURITY.md` folgen in Task 0.1; `docs/SOURCE_REUSE_MATRIX.md` **angelegt** (2026-10-09, OPTIMIZE-FIRST Lauf); `docs/SKILL-INDEX.md` ist **erledigt** (Task 0.7) | 2026-10-09 | 1 | Gerüst-Aufgabe steht aus | Task 0.1 |
-
 ---
 
 ## 3. Wichtige Entscheidungen (Kurzform, Langform in `docs/DECISIONS.md`)
@@ -90,10 +92,10 @@
 
 ## 7. Was als Nächstes automatisch passiert
 
-1. Task `0.1` abarbeiten (Projektgerüst + Dokumente aus der Spec).
-2. Danach `0.2` (Quellen erheben), `0.3` (Ist-Stand selbst messen), `0.4` (ungeordnete Arbeit im alten Ordner bewerten), `0.5` (Umgebung prüfen), `0.6` (Container-Ansatz entscheiden).
-3. Nach jedem Task: Ergebnis hier + in `progress/BUILD-STATE.md` eintragen, dann weiter.
-4. Anhalten nur bei: fehlendem Nutzerentscheid, fehlendem Schlüssel/Gerät (dann weiterbauen und Lücke offen markieren, Spec §4.4), oder zwei gescheiterten Versuchen.
+1. P0 — Vertrauenswürdige Basis: README-Badges korrigiert, BUILD-STATE/CLAUDROIDE_CURRENT_STATE synchronisiert, CI-Trigger committet und verifiziert.
+2. Brand-Asset-Korrektur: WebP-Assets (`claudroide_mark.webp`, `claudroide_banner.webp`) sind veraltet (114 KB, 149 KB — über dem 50 KB Cap). Regenerierung aus frischen PNGs geplant.
+3. Dokumentations-Grafiken: Infografik "How the Autonomous Loop Works", Architecture-Diagramm, Assets Pipeline — benötigen Media Bridge (AGY nicht konfiguriert, siehe Blocker).
+4. Anhalten nur bei: fehlendem Nutzerentscheid, fehlendem Schlüssel/Gerät (dann weiterbauen und Lücke offen markieren), oder zwei gescheiterten Versuchen.
 
 ---
 
