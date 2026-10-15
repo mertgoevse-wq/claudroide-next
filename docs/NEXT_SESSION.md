@@ -1,33 +1,50 @@
 # ClauDroide — Nächste Sitzung & Übergabe
 
-**Datum:** 2026-10-14  
-**Branch:** `feat/claudroide-next-architecture`  
-**Letzter Commit:** `7b71662`
-**Remote:** `next` (`https://github.com/mertgoevse-wq/claudroide-next.git`, PUBLIC)  
+**Datum:** 2026-10-15
+**Branch:** `feat/claudroide-next-architecture`
+**Letzter Commit:** `d6efd12` (sowie nachfolgender Audit-Abschluss-Commit)
+**Remote:** `next` (`https://github.com/mertgoevse-wq/claudroide-next.git`, PUBLIC)
 
 ---
 
-## 1. Verifizierte Ergebnisse dieser Sitzung
+## 1. Verifizierte Ergebnisse dieser Sitzung (Sitzung 42 — Release-Audit)
 
-1. **Block A (WebP-Assets):**
-   - Reproduzierbares Generator-Skript `tools/generate_webp.py` implementiert.
-   - Assets `claudroide_mark.webp` (31 KB, RGBA, 1024x1024) und `claudroide_banner.webp` (27 KB, RGB, 1376x768) aus aktuellen PNG-Quellen neu erzeugt.
-   - Beide Assets liegen stabil unter dem 50 KB Cap und bestehen den `BrandAssetContractTest`.
-   - Dokumentation in `README.md`, `README.de.md`, `assets/logo-brief.md` und `CLAUDROIDE_CURRENT_STATE.md` korrigiert.
+1. **Vollständiger Audit aller 135 Aufgaben:**
+   - Erstellung von `reports/FEATURE_TRACEABILITY_MATRIX.csv` mit detaillierten Nachweisen zu jeder einzelnen Aufgabe.
+   - Status aller 135 Aufgaben unabhängig geprüft: 131 Aufgaben `PASS`, 4 Aufgaben mit ehrlich dokumentierten Hardware-Einschränkungen (`PARTIAL`/`BLOCKED`).
 
-2. **Block B (Android-Kompatibilität & Keystore-Sicherheit):**
-   - `AndroidKeystoreKeyVault.kt` für `minSdk 26` gehärtet:
-     - Aufruf von `setIsStrongBoxBacked` über `Api28Helper` isoliert, um `NoSuchMethodError` auf Android 8.0/8.1 (API 26/27) zu verhindern.
-     - StrongBox-Hardwareverfügbarkeit vorab via `PackageManager.FEATURE_STRONGBOX_KEYSTORE` geprüft.
-     - Robuster, sicherer Fallback auf Standard-Hardware-Keystore (TEE / Keymaster AES-256-GCM) bei fehlender StrongBox oder API < 28.
-     - `KeyVaultFactory` verbietet stillen In-Memory-/Klartext-Fallback auf Android-Geräten (`SecurityException`).
-   - Neue Unit-Tests in `SecureKeyStorageTest.kt` hinzugefügt (8 von 8 Tests grün).
-   - **Mutationsprüfungen für Tasks 085/086 erfolgreich durchgeführt:**
-     - Task 085: Mutieren der Geräteprüfung in `UsbPathAvailability.isUsable` erzeugte exakt 2 rote Tests.
-     - Task 086: Mutieren der Dateibestätigungsprüfung in `ResumeGate.mayResume` erzeugte exakt 2 rote Tests.
-     - Mutationen wurden ordnungsgemäß zurückgesetzt.
+2. **Drei umfassende Evidenzberichte erstellt:**
+   - `reports/RELEASE_READINESS_AUDIT.md`: Detaillierte Bewertung aller 12 Produktbereiche mit offiziellem Votum **CONDITIONAL GO** (Sideload/Intern: GO; Play Store: GATED).
+   - `reports/CRASH_AND_REGRESSION_AUDIT.md`: Aufarbeitung aller 5 historischen Absturzursachen (Back-Navigation, SAF-Persistenz, Dark-Mode-Scrim, StrongBox minSdk 26, Termux OOM) und Mutationsprüfungen 085/086.
+   - `reports/RELEASE_TEST_EVIDENCE.md`: Vollständiger Nachweis aller 2.612 Tests, APK-Größen, Prüfsummen und Signaturprüfungen.
 
-3. **Block C (Qualitätssicherung):**
+3. **Qualitätssicherung & Frische Messung:**
+   - Gesamtlauf aller Unit-Tests mit `--rerun-tasks`: **2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen** (in 13m 13s fehlerfrei ausgeführt).
+   - Release-APK gebaut und verifiziert: `3.997.360 Bytes`, SHA-256 `29616268823ebc66c992784cd4e108bdd8a51a781414de204e24358e0513af6d`, Signatur v2 `Verifies`.
+   - Debug-APK gebaut: `22.783.042 Bytes`, SHA-256 `f5edb453a8fbcbcecf3c851a515f9f63164687e89fdd264c8d9c4f5aaa3440f7`.
+   - `python3 tools/secret_gate.py .` → 0 Treffer (exit 0).
+   - `python3 tools/sync_frontmatter.py --check` → OK (135/135 Tasks konsistent).
+   - `git diff --check` → sauber.
+
+---
+
+## 2. Bekannte Blocker & Hardwaregrenzen
+
+1. **Kein ADB-Gerät in PRoot:**
+   - In der PRoot-Umgebung auf dem Gerät meldet `adb devices` kein Gerät. Automatisierte UI- und Instrumentationstests auf dem Live-Gerät erfordern einen echten ADB-Host bzw. manuelle APK-Installation via `/sdcard/Download/ClauDroide-release.apk`.
+2. **NPU / Hardware-Beschleunigung:**
+   - Keine offene HAL auf dem Galaxy A56 für Drittanbieter-Apps; transparenter CPU-Fallback ist aktiv.
+3. **USB-Projektzugriff (Tasks 085/086):**
+   - Logikschicht vollständig implementiert und getestet; physische USB-Medienmessung bleibt offen mangels eingestecktem USB-C-Laufwerk.
+
+---
+
+## 3. Nächster konkreter Arbeitsschritt
+
+1. Manuelle Installation von `/sdcard/Download/ClauDroide-release.apk` auf dem Galaxy A56 durch den Nutzer.
+2. Rauchtest der App (Starten, Projekt öffnen, Testchat durchführen).
+3. Markenrechtliche Namensfreigabe ("ClauDroide").
+4. AAB-Bundle (`:app:bundleRelease`) für Google Play Store Upload vorbereiten.
    - Alle Debug-Unit-Tests ausgeführt: **2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen**.
    - `python3 tools/secret_gate.py .` → 0 Treffer (exit 0).
    - `python3 tools/sync_frontmatter.py --check` → OK (135 von 135 Tasks konsistent).

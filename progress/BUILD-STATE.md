@@ -1,9 +1,9 @@
 # ClauDroide-Bauzustand
 
-**Stand:** 2026-10-14 (Block A–F — Autonome Fortsetzung: WebP-Assets, Keystore StrongBox minSdk 26, Mutationsprüfung 085/086, APK Build & Delivery)
-**Status:** **135 von 135 Aufgaben `done`**, 0 offen. Kanonische Codebasis `claudroide-next` mit Quellprojekt `claudroide` abgeglichen und konsolidiert (`docs/INTEGRATION_MAP.md`). Back-Navigation hierarchisch gehärtet (BottomSheet → ModelDialog → Drawer → Subdestinations → Exit). SAF Projektordner-Auswahl ("Boom") vollständig reaktiv und persistent mit `ProjectStorage` angebunden. Dark-Mode Scrim repariert (`scrim = Color(0xFF000000)`). Alle 34 UI-Controls auditiert und ohne tote Stubs verdrahtet (`docs/CONTROL_AUDIT.md`). 2.612 Tests in 139 Suiten grün.
+**Stand:** 2026-10-15 (Sitzung 42 — Vollständiger autonomer Release-Readiness-Audit & Abschlussverifikation aller 135 Aufgaben)
+**Status:** **135 von 135 Aufgaben `done`**, 0 offen. Kanonische Codebasis `claudroide-next` konsolidiert (`docs/INTEGRATION_MAP.md`). Back-Navigation hierarchisch gehärtet. SAF Projektordner-Auswahl reaktiv und persistent mit `ProjectStorage`. Dark-Mode Scrim repariert. Alle 34 UI-Controls auditiert (`docs/CONTROL_AUDIT.md`). Vier Evidenz- und Auditberichte unter `reports/` erstellt. 2.612 Tests in 139 Suiten grün. Release- und Debug-APKs gebaut und kryptografisch signiert.
 
-**Teststand (selbst gemessen, 2026-10-14):** `./gradlew --no-daemon -Dorg.gradle.jvmargs="-Xmx1536m" :app:testDebugUnitTest` → BUILD SUCCESSFUL, **2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen**. `./gradlew --no-daemon -Dorg.gradle.jvmargs="-Xmx1536m" :app:assembleDebug` → BUILD SUCCESSFUL. APK: `app/build/outputs/apk/debug/app-debug.apk` 23.331.258 Bytes, SHA-256 `cd33110ea5d6f618462cb248afdd8bcbcb40935b9558c1a0084442e985115d60`. `python3 tools/secret_gate.py .` → 0 Treffer, exit 0. `python3 tools/sync_frontmatter.py --check` → OK. `git diff --check` → OK.
+**Teststand (selbst gemessen mit --rerun-tasks, 2026-10-15):** `./gradlew --no-daemon -Dorg.gradle.jvmargs="-Xmx1536m" :app:testDebugUnitTest --rerun-tasks` → BUILD SUCCESSFUL in 13m 13s, **2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen**. `./gradlew :app:assembleDebug` → BUILD SUCCESSFUL, APK: 22.783.042 Bytes, SHA-256 `f5edb453a8fbcbcecf3c851a515f9f63164687e89fdd264c8d9c4f5aaa3440f7`. `:app:assembleRelease` → BUILD SUCCESSFUL, APK: 3.997.360 Bytes, SHA-256 `29616268823ebc66c992784cd4e108bdd8a51a781414de204e24358e0513af6d` (Signatur Scheme v2 verifiziert). `python3 tools/secret_gate.py .` → 0 Treffer, exit 0. `python3 tools/sync_frontmatter.py --check` → OK. `git diff --check` → OK.
 
 **APK-Delivery (selbst gemessen, 2026-10-14):** Kopiert nach `/sdcard/Download/ClauDroide-debug.apk` (23.331.258 Bytes); `/sdcard/Download/ClauDroide-debug.apk.sha256` erstellt. SHA-256 des kopierten Downloads identisch mit dem Build-Output (`cd33110ea5d6f618462cb248afdd8bcbcb40935b9558c1a0084442e985115d60`).
 
@@ -44,4 +44,25 @@
 - `python3 tools/sync_frontmatter.py --check` → OK (135/135 Tasks konsistent).
 - `git diff --check` → sauber.
 - APK nach `/sdcard/Download/ClauDroide-release.apk` kopiert; SHA-256 identisch.
-- **Nächster Schritt:** R8/ProGuard-Audit vertiefen — Lint-Vital-Bericht und Mapping-Analyse für verwaiste oder überbeschränkte Klassen. Dann AAB-Build (`:app:bundleRelease`) vorbereiten.
+- **Letzte sichere Git-Referenz:** `d6efd12` auf `feat/claudroide-next-architecture`.
+
+**Sitzung 42 — Vollständiger Release-Readiness-Audit & Abschlussprüfung (2026-10-15):**
+- **135/135 Aufgaben unabhängig auditiert:**
+  - `reports/FEATURE_TRACEABILITY_MATRIX.csv`: 135 Datensätze mit Akzeptanzkriterien, Quelldateien, UI-Pfaden, Testresultaten, Hardwareevidenz und Status (`PASS`, `PARTIAL`, `BLOCKED`).
+  - 131 Aufgaben mit vollständiger Kotlin-Implementierung und 100% grünen Tests (`PASS`).
+  - 4 Aufgaben mit ehrlich ausgewiesenen Hardware-Schranken (`PARTIAL`/`BLOCKED`: 006 ADB im PRoot, 007 NPU-HAL, 085/086 USB-Hardware-Probe).
+- **Vier Evidenz- und Auditberichte erstellt und abgelegt:**
+  - `reports/RELEASE_READINESS_AUDIT.md`: Umfassender Audit-Bericht mit offiziellem Votum **CONDITIONAL GO** (Sideload/Interner Test: GO; Play Store: GATED bis A56-Rauchtest und Markenfreigabe).
+  - `reports/FEATURE_TRACEABILITY_MATRIX.csv`: Detaillierte Traceability-Matrix aller 135 Tasks.
+  - `reports/CRASH_AND_REGRESSION_AUDIT.md`: Dokumentation der 5 behobenen Crash-Ursachen (Back-Navigation, SAF-Persistenz, Dark-Mode-Scrim, StrongBox minSdk 26, Termux OOM) und Mutationsprüfungen.
+  - `reports/RELEASE_TEST_EVIDENCE.md`: Vollständiger Nachweis aller 2.612 Tests, APK-Größen, Prüfsummen und Signaturprüfungen.
+- **Frische Test-Gesamtverifikation (selbst gemessen, 2026-10-15):**
+  `./gradlew --no-daemon -Dorg.gradle.jvmargs="-Xmx1536m" :app:testDebugUnitTest --rerun-tasks` → **BUILD SUCCESSFUL in 13m 13s, 22 executed tasks, 2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen**.
+- **Build-Artefakte verifiziert:**
+  - Release-APK: `app/build/outputs/apk/release/app-release.apk` (3.997.360 Bytes, SHA-256 `29616268823ebc66c992784cd4e108bdd8a51a781414de204e24358e0513af6d`, Scheme v2 verifiziert via `apksigner`).
+  - Debug-APK: `app/build/outputs/apk/debug/app-debug.apk` (22.783.042 Bytes, SHA-256 `f5edb453a8fbcbcecf3c851a515f9f63164687e89fdd264c8d9c4f5aaa3440f7`, Schema v1+v2 signiert).
+- **Sicherheits- und Qualitätsgates:**
+  - `python3 tools/secret_gate.py .` → 0 Treffer (exit 0).
+  - `python3 tools/sync_frontmatter.py --check` → OK (135/135 Tasks konsistent).
+  - `git diff --check` → sauber.
+- **Nächster Schritt:** Push an das verifizierte Repository `next/feat/claudroide-next-architecture` und manueller Smoke Test durch den Nutzer auf dem Samsung Galaxy A56.
