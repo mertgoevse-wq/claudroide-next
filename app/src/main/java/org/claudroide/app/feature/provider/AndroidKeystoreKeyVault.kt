@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import androidx.annotation.RequiresApi
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 
@@ -178,7 +179,9 @@ class AndroidKeystoreKeyVault(
 /**
  * Helper to isolate API 28+ method calls from class loading on API 26-27.
  */
+@RequiresApi(Build.VERSION_CODES.P)
 private object Api28Helper {
+    @RequiresApi(Build.VERSION_CODES.P)
     fun setStrongBoxBacked(builder: KeyGenParameterSpec.Builder, backed: Boolean) {
         builder.setIsStrongBoxBacked(backed)
     }
