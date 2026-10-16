@@ -1,9 +1,11 @@
 # ClauDroide-Bauzustand
 
-**Stand:** 2026-10-15 (Sitzung 42 — Vollständiger autonomer Release-Readiness-Audit & Abschlussverifikation aller 135 Aufgaben)
-**Status:** **135 von 135 Aufgaben `done`**, 0 offen. Kanonische Codebasis `claudroide-next` konsolidiert (`docs/INTEGRATION_MAP.md`). Back-Navigation hierarchisch gehärtet. SAF Projektordner-Auswahl reaktiv und persistent mit `ProjectStorage`. Dark-Mode Scrim repariert. Alle 34 UI-Controls auditiert (`docs/CONTROL_AUDIT.md`). Vier Evidenz- und Auditberichte unter `reports/` erstellt. 2.612 Tests in 139 Suiten grün. Release- und Debug-APKs gebaut und kryptografisch signiert.
+**Stand:** 2026-10-16 (Sitzung 43 — Einrichtung und Verifikation des reproduzierbaren Galaxy A56 Entwicklungsworkflows)
+**Status:** **135 von 135 Aufgaben `done`**, 0 offen. Kanonische Codebasis `claudroide-next` konsolidiert (`docs/INTEGRATION_MAP.md`). Lokale A56-Toolchain (Java 17 Temurin arm64, native aapt2 2.20 aarch64, Android SDK API 34/35) erfolgreich verifiziert. Workflow-CLI `tools/cdx` und Terminal-Workspace `tools/cdx-tmux` implementiert. Skills `/claudroide-resume` und `/cdx` global aktiviert. Fast-Unit-Testlauf erfolgreich durchgeführt (BUILD SUCCESSFUL in 2m 10s, 0 Fehler). Keine offenen Blocker für lokale Weiterentwicklung.
 
-**Teststand (selbst gemessen mit --rerun-tasks, 2026-10-15):** `./gradlew --no-daemon -Dorg.gradle.jvmargs="-Xmx1536m" :app:testDebugUnitTest --rerun-tasks` → BUILD SUCCESSFUL in 13m 13s, **2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen**. `./gradlew :app:assembleDebug` → BUILD SUCCESSFUL, APK: 22.783.042 Bytes, SHA-256 `f5edb453a8fbcbcecf3c851a515f9f63164687e89fdd264c8d9c4f5aaa3440f7`. `:app:assembleRelease` → BUILD SUCCESSFUL, APK: 3.997.360 Bytes, SHA-256 `29616268823ebc66c992784cd4e108bdd8a51a781414de204e24358e0513af6d` (Signatur Scheme v2 verifiziert). `python3 tools/secret_gate.py .` → 0 Treffer, exit 0. `python3 tools/sync_frontmatter.py --check` → OK. `git diff --check` → OK.
+**Teststand (selbst gemessen, 2026-10-16):** Fast-Unit-Tests (`:app:testDebugUnitTest --tests "org.claudroide.app.ThemeScrimTest"`) → BUILD SUCCESSFUL in 2m 10s, 22 actionable tasks, 0 Fehler. Vollständige Baseline (2026-10-15): 2.612 Tests in 139 Suiten, 0 Fehler, 0 übersprungen. `python3 tools/secret_gate.py .` → 0 Treffer, exit 0. `python3 tools/sync_frontmatter.py --check` → OK. `git diff --check` → OK.
+
+**Letzte sichere Git-Referenz:** `69e93f3` auf `feat/claudroide-next-architecture`.
 
 **APK-Delivery (selbst gemessen, 2026-10-14):** Kopiert nach `/sdcard/Download/ClauDroide-debug.apk` (23.331.258 Bytes); `/sdcard/Download/ClauDroide-debug.apk.sha256` erstellt. SHA-256 des kopierten Downloads identisch mit dem Build-Output (`cd33110ea5d6f618462cb248afdd8bcbcb40935b9558c1a0084442e985115d60`).
 

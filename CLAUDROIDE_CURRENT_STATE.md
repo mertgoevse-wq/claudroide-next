@@ -13,11 +13,11 @@
 
 | Feld | Wert |
 |---|---|
-| **Stand** | `2026-10-14` (135/135 Tasks done; Block A+B abgeschlossen) |
-| **Aktuelle Phase** | Implementation & Verification (alle 135 Tasks erledigt) |
-| **Nächster Task** | Produktweiterentwicklung außerhalb des Task-Systems: P0 — Vertrauenswürdige Basis (README-Korrekturen, Dokumentationskonsistenz, CI-Verifikation) |
-| **Letzter Schritt in diesem Lauf** | Block A (Reality Check) & Block B (APK-Build, Tests, Delivery) abgeschlossen: 2.608 Tests grün, APK gebaut und nach `/sdcard/Download/` kopiert, CI-Trigger korrigiert, README/Dokumentation auf Messwerte aktualisiert. |
-| **Letzte abgeschlossene Tasks** | Alle 135 Tasks (`done`) — kanonische Codebasis `claudroide-next` mit Quellprojekt `claudroide` abgeglichen |
+| **Stand** | `2026-10-16` (135/135 Tasks done; Entwicklungsworkflow & A56-Toolchain verifiziert) |
+| **Aktuelle Phase** | Developer Environment & Verification (cdx CLI, Workflow, Sideload-Delivery) |
+| **Nächster Task** | P0 — Vertrauenswürdige Basis (A56 Smoke-Test, Dokumentationskonsistenz, optionaler Push nach Freigabe) |
+| **Letzter Schritt in diesem Lauf** | Nicht-invasive Bestandsaufnahme, aapt2 aarch64 Verifikation, `cdx` CLI und `cdx-tmux` Toolchain eingerichtet, `/claudroide-resume` & `/cdx` Skills global verlinkt, Fast-Unit-Test `BUILD SUCCESSFUL` (2m 10s). |
+| **Letzte abgeschlossene Tasks** | Alle 135 Tasks (`done`) — Workflow-Automatisierung für Samsung Galaxy A56 erfolgreich integriert |
 | **Läuft gerade** | nichts — kein Build, kein Shell-Job, kein Subagent |
 | **Not-Aus-Status** | nicht ausgelöst |
 | **Nachweis-Datei** | `progress/BUILD-STATE.md` (technischer Zwilling dieser Datei) |
