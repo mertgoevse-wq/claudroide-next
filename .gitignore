@@ -44,3 +44,6 @@ local.properties
 # Scratch: text-measurement probe from tools/banner.py, not a shipped asset
 assets/brand/.build/.measure/
 _sources/
+
+# Local visual-QA captures (Playwright MCP)
+.playwright-mcp/
