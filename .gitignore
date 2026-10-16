@@ -4,9 +4,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-.venv/
+/env/
+/venv/
+/.venv/
 
 # Secrets & Environment
 *.env
@@ -29,7 +29,9 @@ Thumbs.db
 
 # Android / Build (future)
 .gradle/
-build/
+# Anchored: an unanchored `build/` also hid app/src/.../distro/build/*.kt
+/build/
+/app/build/
 *.apk
 *.aab
 
