@@ -114,24 +114,33 @@ fun AppShell() {
     }
 
     // Dynamic recent chats wired to active session
-    val recentChats = remember(chatUiState.conversationId, chatUiState.messages.size) {
-        val currentTitle = if (chatUiState.messages.isNotEmpty()) {
-            ConversationManager.autoGenerateTitle(chatUiState.messages.first().text)
-        } else {
-            "Aktuelle Unterhaltung"
-        }
-        val currentSnippet = chatUiState.messages.lastOrNull()?.text ?: "Neu gestartet"
-
-        listOf(
+    val recentChats = remember(chatUiState.recentSessions, chatUiState.conversationId, chatUiState.messages.size) {
+        val currentSession = chatUiState.messages.takeIf { it.isNotEmpty() }?.let { messages ->
             RecentChat(
                 id = chatUiState.conversationId,
-                title = currentTitle,
-                preview = currentSnippet,
-                timestamp = System.currentTimeMillis()
-            ),
-            RecentChat("1", "Foreground Service Audio", "Implementing background audio...", System.currentTimeMillis() - 86400000),
-            RecentChat("2", "Inspect Android Architecture", "Jetpack Compose & Coroutines", System.currentTimeMillis() - 172800000),
-        )
+                title = messages.firstOrNull()?.text
+                    ?.let(ConversationManager::autoGenerateTitle)
+                    ?.let(org.claudroide.app.feature.provider.SecretMasker::redact)
+                    ?: "Neue Unterhaltung",
+                preview = org.claudroide.app.feature.provider.SecretMasker.redact(
+                    messages.lastOrNull()?.text.orEmpty()
+                ),
+                timestamp = chatUiState.recentSessions
+                    .firstOrNull { it.conversationId == chatUiState.conversationId }
+                    ?.timestamp ?: System.currentTimeMillis(),
+            )
+        }
+        val persistedSessions = chatUiState.recentSessions
+            .filterNot { currentSession?.id == it.conversationId }
+            .map { session ->
+                RecentChat(
+                    id = session.conversationId,
+                    title = session.title,
+                    preview = session.preview,
+                    timestamp = session.timestamp,
+                )
+            }
+        listOfNotNull(currentSession) + persistedSessions
     }
 
     ModalNavigationDrawer(

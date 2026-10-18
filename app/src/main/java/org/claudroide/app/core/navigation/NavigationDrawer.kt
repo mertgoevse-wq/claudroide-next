@@ -186,6 +186,7 @@ fun NavigationDrawer(
                 items(recentChats, key = { it.id }) { chat ->
                     RecentChatRow(
                         title = chat.title,
+                        preview = chat.preview,
                         onClick = {
                             onChatSelect(chat)
                             onClose()
@@ -309,6 +310,7 @@ private fun DrawerNavigationRow(
 @Composable
 private fun RecentChatRow(
     title: String,
+    preview: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -329,12 +331,23 @@ private fun RecentChatRow(
             tint = colors.textTertiary,
             modifier = Modifier.size(16.dp),
         )
-        Text(
-            text = title,
-            style = CcTheme.tokens.typography.bodyMedium,
-            color = colors.textPrimary,
-            maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = CcTheme.tokens.typography.bodyMedium,
+                color = colors.textPrimary,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+            if (preview.isNotBlank()) {
+                Text(
+                    text = preview,
+                    style = CcTheme.tokens.typography.bodySmall,
+                    color = colors.textTertiary,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }

@@ -8,7 +8,6 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -32,6 +31,9 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
         val MESSAGES = stringPreferencesKey("messages_json")
         val TIMESTAMP = longPreferencesKey("timestamp")
         val STREAM_STATE = stringPreferencesKey("stream_state")
+        val ACTIVE_PROMPT_TITLE = stringPreferencesKey("active_prompt_title")
+        val SYSTEM_PROMPT = stringPreferencesKey("system_prompt")
+        val SESSIONS = stringPreferencesKey("sessions_json")
         val AGENT_STATE = stringPreferencesKey("agent_state_json")
         val TOOL_CALLS = stringPreferencesKey("tool_calls_json")
         val PROJECT_URI = stringPreferencesKey("project_uri")
@@ -40,52 +42,45 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
 
     override suspend fun save(record: SessionRecord) {
         context.dataStore.edit { prefs ->
+            val existing = prefs[Keys.SESSIONS]?.let(::jsonToSessions)
+                ?: listOfNotNull(legacySession(prefs))
+            val updated = (existing.filterNot { it.conversationId == record.conversationId } + record)
+                .sortedByDescending { it.timestamp }
+                .take(MAX_STORED_SESSIONS)
+            prefs[Keys.SESSIONS] = sessionsToJson(updated)
             prefs[Keys.CONVERSATION_ID] = record.conversationId
             prefs[Keys.PROVIDER_ID] = record.providerId
             prefs[Keys.MODEL_ID] = record.modelId
             prefs[Keys.MESSAGES] = messagesToJson(record.messages)
             prefs[Keys.TIMESTAMP] = record.timestamp
             prefs[Keys.STREAM_STATE] = record.streamState.name
+            if (record.activePromptTitle == null || record.systemPrompt == null) {
+                prefs.remove(Keys.ACTIVE_PROMPT_TITLE)
+                prefs.remove(Keys.SYSTEM_PROMPT)
+            } else {
+                prefs[Keys.ACTIVE_PROMPT_TITLE] = record.activePromptTitle
+                prefs[Keys.SYSTEM_PROMPT] = record.systemPrompt
+            }
         }
     }
 
-    override suspend fun lastSession(): SessionRecord? = try {
-        context.dataStore.data
+    override suspend fun sessions(limit: Int): List<SessionRecord> = try {
+        val preferences = context.dataStore.data
             .catch { e ->
-                if (e is IOException) {
-                    emit(emptyPreferences())
-                } else {
-                    throw e
-                }
-            }
-            .map { prefs ->
-                val conversationId = prefs[Keys.CONVERSATION_ID] ?: return@map null
-                val providerId = prefs[Keys.PROVIDER_ID] ?: return@map null
-                val modelId = prefs[Keys.MODEL_ID] ?: return@map null
-                val messagesJson = prefs[Keys.MESSAGES] ?: return@map null
-                val timestamp = prefs[Keys.TIMESTAMP] ?: return@map null
-                val streamStateStr = prefs[Keys.STREAM_STATE] ?: org.claudroide.app.feature.provider.network.StreamState.IDLE.name
-
-                val messages = jsonToMessages(messagesJson)
-                val streamState = try {
-                    org.claudroide.app.feature.provider.network.StreamState.valueOf(streamStateStr)
-                } catch (_: Exception) {
-                    org.claudroide.app.feature.provider.network.StreamState.IDLE
-                }
-
-                SessionRecord(
-                    conversationId = conversationId,
-                    providerId = providerId,
-                    modelId = modelId,
-                    messages = messages,
-                    timestamp = timestamp,
-                    streamState = streamState
-                )
+                if (e is IOException) emit(emptyPreferences()) else throw e
             }
             .first()
+        val saved = preferences[Keys.SESSIONS]?.let(::jsonToSessions)
+        val records = saved ?: listOfNotNull(legacySession(preferences))
+        records.sortedByDescending { it.timestamp }.take(limit.coerceIn(0, MAX_STORED_SESSIONS))
     } catch (_: Exception) {
-        null
+        emptyList()
     }
+
+    override suspend fun loadSession(conversationId: String): SessionRecord? =
+        sessions(MAX_STORED_SESSIONS).firstOrNull { it.conversationId == conversationId }
+
+    override suspend fun lastSession(): SessionRecord? = sessions().firstOrNull()
 
     suspend fun saveAgentState(
         conversationId: String,
@@ -138,12 +133,73 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
 
     // -- JSON serialization --
 
+    private fun sessionsToJson(sessions: List<SessionRecord>): String = JSONArray().apply {
+        sessions.forEach { record ->
+            put(JSONObject().apply {
+                put("conversationId", record.conversationId)
+                put("providerId", record.providerId)
+                put("modelId", record.modelId)
+                put("messages", JSONArray(record.messages))
+                put("timestamp", record.timestamp)
+                put("streamState", record.streamState.name)
+                put("activePromptTitle", record.activePromptTitle)
+                put("systemPrompt", record.systemPrompt)
+            })
+        }
+    }.toString()
+
+    private fun jsonToSessions(json: String): List<SessionRecord> {
+        val array = JSONArray(json)
+        return (0 until array.length()).map { index ->
+            val obj = array.getJSONObject(index)
+            SessionRecord(
+                conversationId = obj.getString("conversationId"),
+                providerId = obj.getString("providerId"),
+                modelId = obj.getString("modelId"),
+                messages = jsonToMessages(obj.getJSONArray("messages").toString()),
+                timestamp = obj.getLong("timestamp"),
+                streamState = runCatching {
+                    org.claudroide.app.feature.provider.network.StreamState.valueOf(obj.getString("streamState"))
+                }.getOrDefault(org.claudroide.app.feature.provider.network.StreamState.IDLE),
+                activePromptTitle = obj.optString("activePromptTitle").takeIf(String::isNotBlank),
+                systemPrompt = obj.optString("systemPrompt").takeIf(String::isNotBlank),
+            )
+        }
+    }
+
+    private fun legacySession(prefs: Preferences): SessionRecord? {
+        val conversationId = prefs[Keys.CONVERSATION_ID] ?: return null
+        val providerId = prefs[Keys.PROVIDER_ID] ?: return null
+        val modelId = prefs[Keys.MODEL_ID] ?: return null
+        val messages = prefs[Keys.MESSAGES]?.let { runCatching { jsonToMessages(it) }.getOrNull() } ?: return null
+        val timestamp = prefs[Keys.TIMESTAMP] ?: return null
+        val streamState = runCatching {
+            org.claudroide.app.feature.provider.network.StreamState.valueOf(
+                prefs[Keys.STREAM_STATE] ?: org.claudroide.app.feature.provider.network.StreamState.IDLE.name,
+            )
+        }.getOrDefault(org.claudroide.app.feature.provider.network.StreamState.IDLE)
+        return SessionRecord(
+            conversationId = conversationId,
+            providerId = providerId,
+            modelId = modelId,
+            messages = messages,
+            timestamp = timestamp,
+            streamState = streamState,
+            activePromptTitle = prefs[Keys.ACTIVE_PROMPT_TITLE],
+            systemPrompt = prefs[Keys.SYSTEM_PROMPT],
+        )
+    }
+
     private fun messagesToJson(messages: List<String>): String =
         JSONArray(messages).toString()
 
     private fun jsonToMessages(json: String): List<String> {
         val array = JSONArray(json)
         return (0 until array.length()).map { array.getString(it) }
+    }
+
+    private companion object {
+        const val MAX_STORED_SESSIONS = 25
     }
 
     private fun agentStateToJson(state: AgentRunState): String {
@@ -241,7 +297,18 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
 interface SessionPersistence {
     suspend fun save(record: SessionRecord)
     suspend fun lastSession(): SessionRecord?
+    suspend fun sessions(limit: Int = 25): List<SessionRecord> = listOfNotNull(lastSession()).take(limit.coerceAtLeast(1))
+    suspend fun loadSession(conversationId: String): SessionRecord? =
+        sessions().firstOrNull { it.conversationId == conversationId }
 }
+
+/** Lightweight local summary used in the recent-conversation list. */
+data class RecentSession(
+    val conversationId: String,
+    val title: String,
+    val preview: String,
+    val timestamp: Long,
+)
 
 /** A persisted session snapshot. */
 data class SessionRecord(
@@ -250,7 +317,9 @@ data class SessionRecord(
     val modelId: String,
     val messages: List<String>,
     val timestamp: Long,
-    val streamState: org.claudroide.app.feature.provider.network.StreamState = org.claudroide.app.feature.provider.network.StreamState.IDLE
+    val streamState: org.claudroide.app.feature.provider.network.StreamState = org.claudroide.app.feature.provider.network.StreamState.IDLE,
+    val activePromptTitle: String? = null,
+    val systemPrompt: String? = null
 )
 
 /** Agent runtime state for recovery. */

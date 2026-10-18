@@ -35,14 +35,14 @@ import java.util.concurrent.atomic.AtomicReference
 class ProviderTransport(
     private val keyVault: KeyVaultStorage,
     private val httpClient: OkHttpClient = DEFAULT_CLIENT
-) {
+) : org.claudroide.app.feature.chat.ChatStreamTransport {
 
-    fun streamRequest(
+    override fun streamRequest(
         descriptor: ProviderDescriptor,
         modelId: String,
         messages: List<ChatMessage>,
-        system: String? = null,
-        maxTokens: Int = 1024
+        system: String?,
+        maxTokens: Int,
     ): Flow<SseEvent> = callbackFlow {
         val apiKey = keyVault.retrieveKey(descriptor.providerId)
             ?: throw ProviderConnectionException("Kein Zugangsschlüssel fuer ${descriptor.providerId} hinterlegt.")

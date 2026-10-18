@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +18,7 @@ import org.claudroide.app.feature.provider.ProviderAuthType
 import org.claudroide.app.feature.provider.ProviderCatalogRegistry
 import org.claudroide.app.feature.provider.ProviderDescriptor
 import org.claudroide.app.feature.provider.ProviderTransport
+import org.claudroide.app.feature.provider.network.SseEvent
 import org.claudroide.app.feature.provider.network.StreamState
 import org.claudroide.app.feature.provider.network.StreamingResponseEngine
 
@@ -26,10 +28,20 @@ import org.claudroide.app.feature.provider.network.StreamingResponseEngine
  * Owns the live chat: messages, streaming state, provider selection, session persistence.
  * This is the only ViewModel in the app and the bridge between ChatScreen and the transport.
  */
+interface ChatStreamTransport {
+    fun streamRequest(
+        descriptor: ProviderDescriptor,
+        modelId: String,
+        messages: List<org.claudroide.app.feature.provider.ChatMessage>,
+        system: String? = null,
+        maxTokens: Int = 1024,
+    ): Flow<SseEvent>
+}
+
 class ChatViewModel @JvmOverloads constructor(
     application: Application,
     private val keyVault: KeyVaultStorage = KeyVaultFactory.create(application),
-    private val transport: ProviderTransport = ProviderTransport(keyVault),
+    private val transport: ChatStreamTransport = ProviderTransport(keyVault),
     private val sessionStore: SessionPersistence = SessionDataStore(application)
 ) : AndroidViewModel(application) {
 
@@ -50,7 +62,7 @@ class ChatViewModel @JvmOverloads constructor(
     @Suppress("unused")
     constructor(
         keyVault: KeyVaultStorage,
-        transport: ProviderTransport = ProviderTransport(keyVault),
+        transport: ChatStreamTransport = ProviderTransport(keyVault),
         sessionStore: SessionPersistence = NoOpSessionStore
     ) : this(StubApplication(), keyVault, transport, sessionStore) {
         // Skip Android-specific session restoration in tests.
@@ -65,6 +77,8 @@ class ChatViewModel @JvmOverloads constructor(
     private object NoOpSessionStore : SessionPersistence {
         override suspend fun lastSession(): SessionRecord? = null
         override suspend fun save(session: SessionRecord) {}
+        override suspend fun sessions(limit: Int): List<SessionRecord> = emptyList()
+        override suspend fun loadSession(conversationId: String): SessionRecord? = null
     }
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -76,22 +90,12 @@ class ChatViewModel @JvmOverloads constructor(
     init {
         // Restore last session on startup (Task 039 — Sitzungen fortsetzen)
         viewModelScope.launch {
-            val last = sessionStore.lastSession()
-            if (last != null && last.messages.isNotEmpty()) {
-                _uiState.value = _uiState.value.copy(
-                    messages = last.messages.mapIndexed { i, text ->
-                        ChatMessage(
-                            id = "restored_$i",
-                            text = text,
-                            fromUser = i % 2 == 0
-                        )
-                    },
-                    currentProviderId = last.providerId,
-                    currentModelId = last.modelId,
-                    conversationId = last.conversationId,
-                    streamState = last.streamState
-                )
-            }
+            val sessions = runCatching { sessionStore.sessions() }.getOrDefault(emptyList())
+            val last = sessions.firstOrNull()
+            _uiState.value = _uiState.value.copy(
+                recentSessions = sessions.map { it.toRecentSession() },
+            )
+            if (last != null) restoreSession(last)
         }
     }
 
@@ -102,10 +106,16 @@ class ChatViewModel @JvmOverloads constructor(
     }
 
     fun onProviderSelected(providerId: String, modelId: String) {
-        _uiState.value = _uiState.value.copy(
+        val state = _uiState.value
+        if (state.isStreaming) {
+            _uiState.value = state.copy(error = "Stoppe zuerst die laufende Antwort, bevor du den Anbieter wechselst.")
+            return
+        }
+        _uiState.value = state.copy(
             currentProviderId = providerId,
-            currentModelId = modelId
+            currentModelId = modelId,
         )
+        persistSession()
     }
 
     fun sendMessage() {
@@ -160,6 +170,7 @@ class ChatViewModel @JvmOverloads constructor(
             error = null,
             streamState = StreamState.CONNECTING
         )
+        persistSession()
 
         streamingJob = viewModelScope.launch {
             val engine = StreamingResponseEngine()
@@ -170,7 +181,7 @@ class ChatViewModel @JvmOverloads constructor(
                     descriptor = descriptor,
                     modelId = state.currentModelId,
                     messages = history,
-                    system = null,
+                    system = state.systemPrompt,
                     maxTokens = 1024
                 ).collect { event ->
                     engine.accept(event)
@@ -230,12 +241,19 @@ class ChatViewModel @JvmOverloads constructor(
     }
 
     fun newConversation() {
+        if (_uiState.value.isStreaming) {
+            _uiState.value = _uiState.value.copy(error = "Stoppe zuerst die laufende Antwort, bevor du einen neuen Chat öffnest.")
+            return
+        }
+        persistSession()
         _uiState.value = _uiState.value.copy(
             messages = emptyList(),
             conversationId = generateConversationId(),
-            streamState = StreamState.IDLE
+            streamState = StreamState.IDLE,
+            activePromptTitle = null,
+            systemPrompt = null,
+            error = null,
         )
-        persistSession()
     }
 
     private fun buildHistory(previous: List<ChatMessage>, newUserText: String): List<org.claudroide.app.feature.provider.ChatMessage> {
@@ -258,8 +276,14 @@ class ChatViewModel @JvmOverloads constructor(
                     modelId = state.currentModelId,
                     messages = state.messages.map { it.text },
                     timestamp = System.currentTimeMillis(),
-                    streamState = state.streamState
+                    streamState = state.streamState,
+                    activePromptTitle = state.activePromptTitle,
+                    systemPrompt = state.systemPrompt
                 )
+            )
+            val sessions = runCatching { sessionStore.sessions() }.getOrDefault(emptyList())
+            _uiState.value = _uiState.value.copy(
+                recentSessions = sessions.map { it.toRecentSession() },
             )
         }
     }
@@ -302,10 +326,51 @@ class ChatViewModel @JvmOverloads constructor(
     }
 
     fun selectConversation(conversationId: String, title: String) {
+        if (_uiState.value.isStreaming) {
+            _uiState.value = _uiState.value.copy(error = "Stoppe zuerst die laufende Antwort, bevor du den Chat wechselst.")
+            return
+        }
+        viewModelScope.launch {
+            val session = runCatching { sessionStore.loadSession(conversationId) }.getOrNull()
+            if (session == null) {
+                _uiState.value = _uiState.value.copy(error = "Die Unterhaltung konnte nicht gefunden werden.")
+                return@launch
+            }
+            restoreSession(session)
+        }
+    }
+
+    private fun restoreSession(session: SessionRecord) {
         _uiState.value = _uiState.value.copy(
-            conversationId = conversationId,
+            messages = session.messages.mapIndexed { index, text ->
+                ChatMessage(
+                    id = "${session.conversationId}_$index",
+                    text = text,
+                    fromUser = index % 2 == 0,
+                )
+            },
+            currentProviderId = session.providerId,
+            currentModelId = session.modelId,
+            conversationId = session.conversationId,
+            streamState = session.streamState.takeUnless {
+                it == StreamState.CONNECTING || it == StreamState.RECEIVING
+            } ?: StreamState.ABORTED,
+            activePromptTitle = session.activePromptTitle,
+            systemPrompt = session.systemPrompt,
             error = null,
-            streamState = StreamState.IDLE
+        )
+    }
+
+    private fun SessionRecord.toRecentSession(): RecentSession {
+        val title = messages.firstOrNull { it.isNotBlank() }
+            ?.let(ConversationManager::autoGenerateTitle)
+            ?: ConversationManager.DEFAULT_CHAT_TITLE
+        val preview = messages.lastOrNull().orEmpty()
+        return RecentSession(
+            conversationId = conversationId,
+            title = org.claudroide.app.feature.provider.SecretMasker.redact(title),
+            preview = org.claudroide.app.feature.provider.SecretMasker.redact(preview),
+            timestamp = timestamp,
         )
     }
 
@@ -337,6 +402,24 @@ class ChatViewModel @JvmOverloads constructor(
             )
         )
     }
+
+    fun onPromptSelected(title: String, content: String) {
+        val state = _uiState.value
+        if (state.isStreaming) {
+            _uiState.value = state.copy(error = "Stoppe zuerst die laufende Antwort, bevor du die Rolle wechselst.")
+            return
+        }
+        if (title.isBlank() || content.isBlank()) {
+            _uiState.value = state.copy(error = "Die ausgewählte Rolle konnte nicht geladen werden.")
+            return
+        }
+        _uiState.value = state.copy(
+            activePromptTitle = title,
+            systemPrompt = content,
+            error = null,
+        )
+        persistSession()
+    }
 }
 
 data class ChatUiState(
@@ -349,6 +432,9 @@ data class ChatUiState(
     val conversationId: String = generateConversationId(),
     val error: String? = null,
     val lastUsage: TokenUsage? = null,
+    val activePromptTitle: String? = null,
+    val systemPrompt: String? = null,
+    val recentSessions: List<RecentSession> = emptyList(),
     val showAttachmentSheet: Boolean = false,
     val showModelDialog: Boolean = false,
     val showVoiceInfoDialog: Boolean = false,
@@ -364,9 +450,14 @@ data class TokenUsage(
 
 /** In-memory fallback for JVM tests. */
 class InMemorySessionStore : SessionPersistence {
-    private var last: SessionRecord? = null
-    override suspend fun save(record: SessionRecord) { last = record }
-    override suspend fun lastSession(): SessionRecord? = last
+    private val records = linkedMapOf<String, SessionRecord>()
+    override suspend fun save(record: SessionRecord) {
+        records[record.conversationId] = record
+    }
+    override suspend fun lastSession(): SessionRecord? = sessions().firstOrNull()
+    override suspend fun sessions(limit: Int): List<SessionRecord> =
+        records.values.sortedByDescending { it.timestamp }.take(limit.coerceIn(0, 25))
+    override suspend fun loadSession(conversationId: String): SessionRecord? = records[conversationId]
 }
 
 private fun generateConversationId(): String =
