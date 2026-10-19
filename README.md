@@ -1,15 +1,17 @@
 # ClauDroide
 
 <p align="center">
-  <img src="assets/brand/1791295622623.jpg" alt="ClauDroide — a green Android dome and a terminal-screen bot holding hands beside the product name" width="100%" style="border-radius: 12px;" />
+  <img src="assets/brand/1791295622623.jpg" alt="ClauDroide — Android bot and Claude bot collaborating under starry sky" width="100%" style="border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);" />
 </p>
 
 <p align="center">
-  <img src="assets/brand/1791468217945.jpg" alt="ClauDroide mark" width="96" />
+  <a href="assets/brand/1791468217945.jpg">
+    <img src="assets/brand/1791468217945.jpg" alt="ClauDroide Official Mascot & App Icon" width="108" style="border-radius: 24px; border: 2px solid #E07A5F;" />
+  </a>
   <br>
   <b>ClauDroide</b> — Autonomous Mobile AI Coding Assistant for Android
   <br>
-  <sub>Native Touch Interface · BYOK (Bring Your Own Key) · Samsung Galaxy A56 5G Tuned · Private GitHub Sync</sub>
+  <sub>Native Material 3 Touch Interface · BYOK Privacy Vault · OmniRoute &amp; Segmind Media Bridge · Google Stitch Architecture · Samsung Galaxy A56 Tuned</sub>
 </p>
 
 <p align="center">
@@ -17,82 +19,78 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Phase-Active%20Development-yellow" alt="Phase" />
-  <img src="https://img.shields.io/badge/Tasks-135%20%2F%20135%20Done-success" alt="Tasks" />
-  <img src="https://img.shields.io/badge/Tests-2612%20passing-success" alt="Tests" />
-  <img src="https://img.shields.io/badge/Target-Galaxy%20A56%205G-orange" alt="Device" />
-  <img src="https://img.shields.io/badge/Repo-public-success" alt="Repo" />
+  <img src="https://img.shields.io/badge/Platform-Android%2014%2B%20%2F%20API%2034-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android" />
+  <img src="https://img.shields.io/badge/UI-Jetpack%20Compose%20M3-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white" alt="Compose" />
+  <img src="https://img.shields.io/badge/Tasks-135%20%2F%20135%20Done-2EA043?style=flat-square&logo=checkmarx&logoColor=white" alt="Tasks" />
+  <img src="https://img.shields.io/badge/Tests-2612%20passing-2EA043?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/Gateway-OmniRoute%20%3A20128-E07A5F?style=flat-square" alt="OmniRoute" />
+  <img src="https://img.shields.io/badge/Design-Google%20Stitch-8AB4F8?style=flat-square" alt="Google Stitch" />
+  <img src="https://img.shields.io/badge/Device-Galaxy%20A56%205G-orange?style=flat-square" alt="A56" />
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square" alt="License" />
 </p>
 
-ClauDroide is an independent native Android application for AI-assisted software engineering and project management (inspired by the Claude Code CLI paradigm, but with an independent brand, clean-room architecture, and mobile-native Compose UI). Primary hardware benchmark: Samsung Galaxy A56 5G. This repository contains the complete specification, 135 machine-readable task briefs, and the deterministic autonomous engineering loop.
+---
 
-> **Independence Notice:** ClauDroide is an independent open-source project and is not commercially or officially affiliated with Anthropic, PBC. Claude is a registered trademark of Anthropic. ClauDroide interacts exclusively via official developer APIs with user-provided API keys (BYOK).
+## ⚡ Key Highlights & Capabilities
 
-**Navigation:** [Quickstart](#quickstart-in-claude-code) · [Engineering Loop](#how-the-autonomous-loop-works) · [Progress Status](#progress-status) · [Assets & Mascot](#assets-and-visual-identity) · [Security Guardrails](#security-and-product-guardrails) · [Documentation Index](#complete-documentation-index)
+- 🤖 **Developer-Grade Native Mobile Studio:** A full-featured native Android interface inspired by Claude Code — not merely a terminal view. Includes real-time token telemetry, syntax-highlighted code diff cards, interactive tool execution approvals, and multi-file tree browsing.
+- 🎨 **Google Stitch High-Fidelity Design System:** Built directly from the verified Stitch design system (`Claudroide Android AI Workspace` on Google AI Pro) with deep slate-charcoal canvas (`#0E1116`), warm terracotta accents (`#E07A5F`), edge-to-edge Android system bars, and 48dp touch envelopes.
+- 🌉 **OmniRoute &amp; Multi-Provider Media Bridge:** Native bridge to OmniRoute (`127.0.0.1:20128`), Segmind (`flux-schnell`, `sdxl1.0`, `sd3.5`), Nano Banana 2, and keyless Pollinations fallback for autonomous media asset generation directly on device.
+- 🔒 **Hardware-Backed BYOK Security:** Zero web-scraping, zero unauthorized relays. Keys encrypted via Android Keystore (StrongBox / TEE AES-256-GCM) with strict Storage Access Framework (SAF) scoped isolation.
 
 ---
 
-## Quickstart in Claude Code
-
-```bash
-cd /home/mert/claudroide-next   # Navigate to project root
-claude                      # Launch Claude Code (CLAUDE.md loads automatically)
-```
-
-Within Claude Code REPL:
-
-| Command / Prompt | Action |
-|---|---|
-| `/claudroide-resume` | Inspects latest checkpoint in `progress/BUILD-STATE.md` against filesystem reality and resumes engineering seamlessly. |
-| `Baue weiter bis zum finalen Produkt` | Starts the autonomous engineering loop from `CLAUDE.md`: select earliest pending task with fulfilled dependencies → implement → test → checkpoint → commit & push. Pauses only on safety gates or blockers. |
-| `Baue Aufgabe 017` | Implements a single specific task in isolation. |
-
-Prerequisites: `git` and verified public remote `mertgoevse-wq/claudroide-next`. The six globally installed skills (`swarm-planner`, `parallel-task`, `adaptive`, `android-profiler`, `android-permissions-security`, `testing-setup`) are verified and loaded per task.
-
-<details>
-<summary><b>Resuming Work After an Interruption or Crash</b></summary>
-
-1. Restart device / Termux environment and enter `/home/mert/claudroide-next`.
-2. Launch `claude`.
-3. Type `/claudroide-resume`.
-
-The skill cross-examines the checkpoint, working tree, and Git commit log without speculating. Every finished task is verified, committed, and synced to remote.
-</details>
-
----
-
-## How the Autonomous Loop Works
+## 📱 Interactive Workspace Navigation
 
 ```mermaid
-flowchart LR
-    A[Select Task<br/>status: pending] --> B{depends_on<br/>all done?}
-    B -- No --> A
-    B -- Yes --> C[Load Required Skills<br/>Safety Gate Check]
-    C --> D[Implement Code & Architecture<br/>Execute Verification Tests]
-    D --> E[Update Task State<br/>sync_frontmatter.py]
-    E --> F[Update Checkpoint + Commit + Push]
-    F --> A
+graph TD
+    AppShell[ClauDroide Native AppShell] --> NavDrawer[Navigation Drawer]
+    NavDrawer --> ViewChat["💬 Chat &amp; Composer<br/>Streaming, Tool Approvals"]
+    NavDrawer --> ViewMedia["🎨 Media &amp; Bild-Studio<br/>OmniRoute, Segmind, FLUX, Aspect Ratios"]
+    NavDrawer --> ViewCodeMcp["⚡ Code &amp; MCP Studio<br/>Tool Registry, Telemetry"]
+    NavDrawer --> ViewArtifacts["📦 Artifacts Gallery<br/>Rendered Assets, Diff Viewer, Reports"]
+    NavDrawer --> ViewProjects["📁 Project Explorer<br/>SAF Folders, Git Status, Staged Commits"]
+    NavDrawer --> ViewSettings["⚙️ Settings &amp; Vault<br/>BYOK Keys, Models, Language, Keystore"]
 ```
-
-- **Waves Instead of Chaos:** `tasks/DEPENDENCIES.md` segments all 135 tasks into dependency waves W0–W29. Non-overlapping tasks can run concurrently via `/parallel-task`.
-- **Machine-Readable Task Definitions:** Every task in `tasks/` carries strict YAML frontmatter (`status`, `depends_on`, `skills`, `wave`, `gate`). The single source of truth is maintained by [`tools/sync_frontmatter.py`](tools/sync_frontmatter.py).
-- **Resilient Checkpoints:** `progress/BUILD-STATE.md` records verified IDs, test evidence, modified files, and clean Git commits after every task.
-
-<details>
-<summary><b>Repository Maintenance Commands</b></summary>
-
-```bash
-python3 tools/sync_frontmatter.py --check            # Verify consistency across 135 tasks (enforced in CI)
-python3 tools/sync_frontmatter.py                    # Heal discrepancies and hashes
-python3 tools/sync_frontmatter.py --status 025=done  # Mark task 025 as completed
-```
-
-Marking `--status ID=done` requires the task specification to remain untouched (`done_since_last_edit: true`); any subsequent modification immediately triggers review.
-</details>
 
 ---
 
-## Progress Status
+<details open>
+<summary><b>🚀 Quickstart &amp; Local A56 Workflow</b></summary>
+
+### 1. Launch in Termux / PRoot on Galaxy A56
+```bash
+cd /home/mert/claudroide-next
+cdx status      # Check toolchain, memory, and repo state
+cdx check       # Verify fast unit tests and secret scanning
+cdx test fast   # Run targeted fast test suites
+cdx build debug # Build debug APK with native aapt2 aarch64
+```
+
+### 2. Autonomous Session Continuation
+```bash
+claude          # Launch Claude Code
+/claudroide-resume  # Automatically inspects and resumes the verified checkpoint
+```
+</details>
+
+<details>
+<summary><b>🌉 OmniRoute &amp; Segmind Media Generation Bridge</b></summary>
+
+ClauDroide interfaces seamlessly with local and remote AI models through OmniRoute on port `20128` and dedicated media providers:
+
+| Provider | Supported Models | Capabilities | Status |
+|---|---|---|---|
+| **OmniRoute** (`localhost:20128`) | `segmind/flux-schnell`, `pollinations/flux`, `agy/gemini-3.1-flash-image`, `sdxl1.0` | Text-to-Image, Multi-Model Routing, Tool Use | 🟢 Active |
+| **Segmind Direct** | `flux-schnell`, `flux-dev`, `sd3.5-large`, `wan2.1-t2v` | Ultra-fast image &amp; video generation | 🟢 Supported |
+| **Pollinations.ai** | `flux`, `turbo` | Zero-config, keyless fallback tier with 100% uptime | 🟢 Configured |
+| **Google Antigravity** | `gemini-3.1-flash-image`, `imagen-3.0` | High-fidelity image generation via Google AI Pro | 🟢 Connected |
+
+Generated assets are saved into `app_data/generated_media/` and immediately viewable in the **Artifacts Gallery**.
+</details>
+
+<details>
+<summary><b>📊 135/135 Task Verification Status</b></summary>
 
 Verified counts synced directly from YAML frontmatter:
 
@@ -100,24 +98,39 @@ Verified counts synced directly from YAML frontmatter:
 |---|---|---|
 | W0–W2 · Foundations, Feasibility, Hardware Profile | 001–008 | 🟢 8 / 8 Completed (W0–W2 Closed) |
 | W3–W6 · Core Architecture, Build Pipelines, Design Tokens | 009–024 | 🟢 16 / 16 Completed (W3–W6 Closed) |
-| W7–W9b · Compose UI & Interactive Chat | 025–042 | 🟢 18 / 18 Completed (W7–W9b Closed) |
-| W10–W14 · Model Providers, Routing & Privacy | 043–069 | 🟢 27 / 27 Completed (W10–W14 Closed) |
-| W15–W19b · Agent Execution & Project Context (SAF) | 070–094 | 🟢 25 / 25 Completed (W15–W19b Closed) |
-| W20–W23 · Git Integration & Sandbox Execution | 095–105 | 🟢 11 / 11 Completed (W20–W23 Closed) |
-| W24–W26 · Security Engine, Approvals & Token Vault | 106–122 | 🟢 17 / 17 Completed (W24–W26 Closed) |
-| W27–W29 · Dynamic Skills, External Tooling & Full E2E | 123–135 | 🟢 13 / 13 Completed (W27–W29 Closed) |
+| W7–W9b · Compose UI &amp; Interactive Chat | 025–042 | 🟢 18 / 18 Completed (W7–W9b Closed) |
+| W10–W14 · Model Providers, Routing &amp; Privacy | 043–069 | 🟢 27 / 27 Completed (W10–W14 Closed) |
+| W15–W19b · Agent Execution &amp; Project Context (SAF) | 070–094 | 🟢 25 / 25 Completed (W15–W19b Closed) |
+| W20–W23 · Git Integration &amp; Sandbox Execution | 095–105 | 🟢 11 / 11 Completed (W20–W23 Closed) |
+| W24–W26 · Security Engine, Approvals &amp; Token Vault | 106–122 | 🟢 17 / 17 Completed (W24–W26 Closed) |
+| W27–W29 · Dynamic Skills, External Tooling &amp; Full E2E | 123–135 | 🟢 13 / 13 Completed (W27–W29 Closed) |
 
-<details>
-<summary><b>Complete Wave Architecture (W0–W29)</b></summary>
+All 2,612 Unit Tests passing (`:app:testDebugUnitTest`). Release APK verified with Scheme v2 signature (`29616268...`).
+</details>
 
-| Wave | Tasks | Dependencies |
-|---|---|---|
-| W0 Bootstrap | 001, 002, 003, 006 | — |
-| W1 Feasibility | 004, 005, 009, 019 | 001, 002, 003 |
-| W2 Hardware Benchmarks | 007, 008 | 006 (+002) |
-| W3 Application Base | 010 | 009, 019 |
-| W4 Build Pipelines | 011, 012 | 008 |
-| W5 Setup & Lifecycle | 013–018 | 010 |
+---
+
+## 🛡️ Security &amp; Legal Guardrails
+
+- **Distinct Brand Identity:** Clean-room naming and visual identity; zero trademark confusion with Anthropic, Claude, or third-party mascots.
+- **Strict BYOK (Bring Your Own Key):** Zero web-scraping, zero session sharing, zero unauthorized proxying. Only official developer endpoints with user-held credentials.
+- **Hardware-Backed Encryption:** Tokens stored securely in Android Keystore / EncryptedSharedPreferences; secret scanning enforced prior to commit/push.
+- **Data Minimization:** No telemetry leakage, strictly scoped Storage Access Framework (SAF) trees, no unnecessary `MANAGE_EXTERNAL_STORAGE` requests.
+
+---
+
+## 📑 Documentation Index
+
+| Document | Purpose |
+|---|---|
+| [`claudroide-spec.md`](claudroide-spec.md) | Product specification, architecture guidelines, test criteria, and all 135 tasks |
+| [`README.de.md`](README.de.md) | Deutsche Version der Dokumentation |
+| [`reports/RELEASE_READINESS_AUDIT.md`](reports/RELEASE_READINESS_AUDIT.md) | Release readiness audit and formal verification report |
+| [`reports/FEATURE_TRACEABILITY_MATRIX.csv`](reports/FEATURE_TRACEABILITY_MATRIX.csv) | Full 135-task traceability matrix with hardware and UI evidence |
+| [`reports/CRASH_AND_REGRESSION_AUDIT.md`](reports/CRASH_AND_REGRESSION_AUDIT.md) | Root-cause analysis and mutation tests for 5 addressed crash risks |
+| [`tasks/skill-matrix.md`](tasks/skill-matrix.md) | Two skills assigned per task, provenance, and audit status |
+| [`CLAUDE.md`](CLAUDE.md) | Autonomous engineering guidelines, media rules, and Git discipline |
+| [`progress/BUILD-STATE.md`](progress/BUILD-STATE.md) | Resilient verified checkpoint ledger |
 | W6 Design System | 020–024 | 003, 019 |
 | W7 UI Foundation | 025–030 | 010, 023, 024 |
 | W8 Chat Engine | 031–035, 037, 042 | 025, 016 |

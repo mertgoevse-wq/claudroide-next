@@ -41,13 +41,12 @@ class ProviderTransport(
         descriptor: ProviderDescriptor,
         modelId: String,
         messages: List<ChatMessage>,
-        system: String?,
         maxTokens: Int,
     ): Flow<SseEvent> = callbackFlow {
         val apiKey = keyVault.retrieveKey(descriptor.providerId)
             ?: throw ProviderConnectionException("Kein Zugangsschlüssel fuer ${descriptor.providerId} hinterlegt.")
 
-        val (headers, requestBody) = buildRequest(descriptor, modelId, messages, system, maxTokens, apiKey)
+        val (headers, requestBody) = buildRequest(descriptor, modelId, messages, maxTokens, apiKey)
 
         val request = Request.Builder()
             .url(descriptor.baseUrl)
@@ -150,7 +149,6 @@ class ProviderTransport(
         descriptor: ProviderDescriptor,
         modelId: String,
         messages: List<ChatMessage>,
-        system: String?,
         maxTokens: Int,
         apiKey: String
     ): Pair<Map<String, String>, okhttp3.RequestBody> {
@@ -172,10 +170,10 @@ class ProviderTransport(
 
         val formatResult = when (protocolFormat) {
             ApiProtocolFormat.ANTHROPIC_MESSAGES -> AnthropicMessageFormatter.buildRequestBody(
-                modelId, messages, system, maxTokens, stream = true
+                modelId, messages, maxTokens = maxTokens, stream = true
             )
             ApiProtocolFormat.OPENAI_COMPATIBLE -> OpenAiMessageFormatter.buildRequestBody(
-                modelId, messages, system, maxTokens, stream = true
+                modelId, messages, maxTokens = maxTokens, stream = true
             )
         }
 

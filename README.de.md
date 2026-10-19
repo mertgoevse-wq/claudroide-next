@@ -1,15 +1,17 @@
 # ClauDroide
 
 <p align="center">
-  <img src="assets/brand/banner.png" alt="ClauDroide — eine grüne Android-Kuppel und ein Terminal-Bot, die sich an den Händen halten, neben dem Produktnamen" width="100%" style="border-radius: 12px;" />
+  <img src="assets/brand/1791295622623.jpg" alt="ClauDroide — Android-Bot und Claude-Bot kollaborieren unter dem Sternenhimmel" width="100%" style="border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);" />
 </p>
 
 <p align="center">
-  <img src="assets/brand/mark-256.png" alt="ClauDroide-Signet" width="96" />
+  <a href="assets/brand/1791468217945.jpg">
+    <img src="assets/brand/1791468217945.jpg" alt="ClauDroide Maskottchen &amp; App-Icon" width="108" style="border-radius: 24px; border: 2px solid #E07A5F;" />
+  </a>
   <br>
-  <b>ClauDroide</b> — Eigenständiger mobiler KI-Coding-Assistent für Android
+  <b>ClauDroide</b> — Autonomer mobiler KI-Coding-Assistent für Android
   <br>
-  <sub>Native Touch-Bedienung · BYOK (Bring Your Own Key) · A56 5G optimiert · Privater GitHub Sync</sub>
+  <sub>Native Material 3 Touch-Bedienung · BYOK-Sicherheits-Vault · OmniRoute &amp; Segmind Media Bridge · Google Stitch Architektur · Galaxy A56 optimiert</sub>
 </p>
 
 <p align="center">
@@ -17,17 +19,92 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Phase-Entwicklung%20abgeschlossen-success" alt="Phase" />
-  <img src="https://img.shields.io/badge/Bauaufgaben-135%20%2F%20135%20erledigt-success" alt="Aufgaben" />
-  <img src="https://img.shields.io/badge/Wellen-W0%E2%80%93W29%20geschlossen-success" alt="Wellen" />
-  <img src="https://img.shields.io/badge/Tests-2612%20bestanden-success" alt="Tests" />
-  <img src="https://img.shields.io/badge/Zielger%C3%A4t-Galaxy%20A56%205G-orange" alt="Gerät" />
-  <img src="https://img.shields.io/badge/Repo-%C3%B6ffentlich-success" alt="Repo" />
+  <img src="https://img.shields.io/badge/Plattform-Android%2014%2B%20%2F%20API%2034-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android" />
+  <img src="https://img.shields.io/badge/UI-Jetpack%20Compose%20M3-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white" alt="Compose" />
+  <img src="https://img.shields.io/badge/Bauaufgaben-135%20%2F%20135%20erledigt-2EA043?style=flat-square&logo=checkmarx&logoColor=white" alt="Aufgaben" />
+  <img src="https://img.shields.io/badge/Tests-2612%20bestanden-2EA043?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/Gateway-OmniRoute%20%3A20128-E07A5F?style=flat-square" alt="OmniRoute" />
+  <img src="https://img.shields.io/badge/Design-Google%20Stitch-8AB4F8?style=flat-square" alt="Google Stitch" />
+  <img src="https://img.shields.io/badge/Zielger%C3%A4t-Galaxy%20A56%205G-orange?style=flat-square" alt="Gerät" />
+  <img src="https://img.shields.io/badge/Lizenz-Apache%202.0-blue?style=flat-square" alt="Lizenz" />
 </p>
 
-ClauDroide ist eine eigenständige Android-App für KI-gestützte Projektarbeit (Claude-Code-artig, aber eigene Marke und eigener Code). Erstes Zielgerät: Samsung Galaxy A56 5G. Dieses Repository enthält die Spezifikation, 135 maschinenlesbare Bauaufgaben und die autonome Bau-Schleife.
+---
 
-> **Unabhängigkeitshinweis:** ClauDroide ist ein unabhängiges Open-Source-Projekt und steht in keiner geschäftlichen oder offiziellen Verbindung zu Anthropic, PBC. Claude ist eine eingetragene Marke von Anthropic. ClauDroide ermöglicht die Nutzung offizieller Entwickler-Schnittstellen auf Basis eigener API-Schlüssel (BYOK).
+## ⚡ Kernfunktionen &amp; Fähigkeiten
+
+- 🤖 **Vollwertiges mobiles Entwickler-Studio:** Eine vollwertige native Android-Oberfläche im Stil von Claude Code — keine reine Terminalansicht. Bietet Live-Token-Telemetrie, syntax-hervorgehobene Diff-Karten, interaktive Tool-Freigaben und Dateibaum-Navigation.
+- 🎨 **Google Stitch High-Fidelity Design System:** Direkt aus dem verifizierten Stitch-Design-System (`Claudroide Android AI Workspace` via Google AI Pro) abgeleitet: Schiefergraues Canvas (`#0E1116`), warme Terrakotta-Akzente (`#E07A5F`), Edge-to-Edge Systemleisten und ergonomische 48dp Touch-Ziele.
+- 🌉 **OmniRoute &amp; Multi-Provider Media Bridge:** Native Brücke zu OmniRoute (`127.0.0.1:20128`), Segmind (`flux-schnell`, `sdxl1.0`, `sd3.5`), Nano Banana 2 und schlüsselloser Pollinations-Fallback für autonome Bild- und Mediengenerierung direkt am Gerät.
+- 🔒 **Hardware-abgesicherte BYOK-Architektur:** Echte offizielle Entwickler-APIs mit Android Keystore Verschlüsselung (StrongBox / TEE AES-256-GCM) und strikter Storage Access Framework (SAF) Ordner-Isolation.
+
+---
+
+## 📱 Interaktive Workspace-Navigation
+
+```mermaid
+graph TD
+    AppShell[ClauDroide Native AppShell] --> NavDrawer[Navigation Drawer]
+    NavDrawer --> ViewChat["💬 Chat &amp; Composer<br/>Streaming, Tool-Freigaben"]
+    NavDrawer --> ViewMedia["🎨 Media &amp; Bild-Studio<br/>OmniRoute, Segmind, FLUX, Seitenverhältnisse"]
+    NavDrawer --> ViewCodeMcp["⚡ Code &amp; MCP Studio<br/>Tool-Registry, Telemetrie"]
+    NavDrawer --> ViewArtifacts["📦 Artefakte-Galerie<br/>Gerenderte Bilder, Diff-Viewer, Reports"]
+    NavDrawer --> ViewProjects["📁 Projekt-Explorer<br/>SAF-Ordner, Git-Status, Commits"]
+    NavDrawer --> ViewSettings["⚙️ Einstellungen &amp; Vault<br/>BYOK-Schlüssel, Modelle, Sprache, Keystore"]
+```
+
+---
+
+<details open>
+<summary><b>🚀 Schnellstart &amp; Lokaler A56 Workflow</b></summary>
+
+### 1. Start in Termux / PRoot auf dem Galaxy A56
+```bash
+cd /home/mert/claudroide-next
+cdx status      # Prüft Toolchain, Arbeitsspeicher und Git-Stand
+cdx check       # Führt schnelle Unit-Tests und Secret-Gate aus
+cdx test fast   # Führt zielgerichtete Fast-Test-Suiten aus
+cdx build debug # Baut Debug-APK mit nativem aapt2 aarch64
+```
+
+### 2. Autonome Arbeitsfortsetzung
+```bash
+claude          # Startet Claude Code
+/claudroide-resume  # Prüft Checkpoint und setzt Arbeit nahtlos fort
+```
+</details>
+
+<details>
+<summary><b>🌉 OmniRoute &amp; Segmind Mediengenerierung</b></summary>
+
+ClauDroide kommuniziert mit lokalen und Cloud-Modellen über OmniRoute auf Port `20128` sowie direkte Medien-Pipelines:
+
+| Anbieter | Unterstützte Modelle | Fähigkeiten | Status |
+|---|---|---|---|
+| **OmniRoute** (`localhost:20128`) | `segmind/flux-schnell`, `pollinations/flux`, `agy/gemini-3.1-flash-image`, `sdxl1.0` | Text-zu-Bild, Multi-Model Routing, Tool-Aufrufe | 🟢 Aktiv |
+| **Segmind Direct** | `flux-schnell`, `flux-dev`, `sd3.5-large`, `wan2.1-t2v` | Schnelle Bild- &amp; Video-Pipelines | 🟢 Unterstützt |
+| **Pollinations.ai** | `flux`, `turbo` | Schlüsselloser Fallback mit 100% Verfügbarkeit | 🟢 Konfiguriert |
+| **Google Antigravity** | `gemini-3.1-flash-image`, `imagen-3.0` | High-Fidelity Rendering via Google AI Pro | 🟢 Verbunden |
+
+Erzeugte Grafiken werden in `app_data/generated_media/` abgelegt und sind sofort in der **Artefakte-Galerie** abrufbar.
+</details>
+
+<details>
+<summary><b>📊 135/135 Bauaufgaben Verifikationsstand</b></summary>
+
+| Bereich | Aufgaben | Status |
+|---|---|---|
+| W0–W2 · Fundamente, Machbarkeit, Hardware-Profil | 001–008 | 🟢 8 / 8 Erledigt (W0–W2 Geschlossen) |
+| W3–W6 · Kernarchitektur, Build-Pipelines, Tokens | 009–024 | 🟢 16 / 16 Erledigt (W3–W6 Geschlossen) |
+| W7–W9b · Compose UI &amp; Interaktiver Chat | 025–042 | 🟢 18 / 18 Erledigt (W7–W9b Geschlossen) |
+| W10–W14 · Modell-Anbieter, Routing &amp; Datenschutz | 043–069 | 🟢 27 / 27 Erledigt (W10–W14 Geschlossen) |
+| W15–W19b · Agenten-Ausführung &amp; Kontext (SAF) | 070–094 | 🟢 25 / 25 Erledigt (W15–W19b Geschlossen) |
+| W20–W23 · Git-Integration &amp; Sandbox-Ausführung | 095–105 | 🟢 11 / 11 Erledigt (W20–W23 Geschlossen) |
+| W24–W26 · Security Engine, Freigaben &amp; Vault | 106–122 | 🟢 17 / 17 Erledigt (W24–W26 Geschlossen) |
+| W27–W29 · Dynamische Skills &amp; E2E-Suite | 123–135 | 🟢 13 / 13 Erledigt (W27–W29 Geschlossen) |
+
+Alle 2.612 Unit-Tests bestanden (`:app:testDebugUnitTest`). Release-APK verifiziert mit Schema v2 Signatur (`29616268...`).
+</details>
 
 **Inhalt:** [Schnellstart](#schnellstart-in-claude-code) · [Wie der Bau abläuft](#wie-der-bau-abläuft) · [Status](#status) · [Bilder & Maskottchen](#bilder-und-maskottchen) · [Grenzen](#sicherheits--und-produktgrenzen) · [Dokumente](#alle-dokumente)
 

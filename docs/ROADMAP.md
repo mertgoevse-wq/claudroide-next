@@ -15,7 +15,7 @@
 | **4** | Kontext + Zustand | Kompression, Rotation, Disk-Persistenz, Wiederaufnahme (`WEITERARBEITEN`), Nutzer-Präferenzen | App-Neustart → Lauf macht am selben Punkt weiter |
 | **5** | Projekte/Dateien/Git | Projektordner (app-eigen + frei wählbar), Syntax-Farben, Bearbeiten, Git-UI, GitHub-Sync (privat, AUS) | Commit im Projekt möglich; Secret-Scan blockt; Vorschau vor Push |
 | **6** | Device Agent | AccessibilityService, Gesten, Screenshot+Liste, Umlaute, **dreifacher Not-Aus**, Sperrliste, ADB-Notweg, **Beweis: Browser + Musik-App** | Gerät: Browser-Seite aufrufen/prüfen → Musik-App Titel starten/prüfen |
-| **7** | Fähigkeiten/Katalog | Skill-/Plugin-/MCP-/Prompt-Kataloge (Progressive Disclosure), Awesome-Prompts-Pipeline, Sicherheitsprüfung | Katalog sichtbar; Fähigkeit lädt erst bei passender Aufgabe |
+| **7** | Fähigkeiten & MCP | Skill-/Plugin-/MCP-Prüfung; passende externe Arbeitsrollen nutzen, aber keine Prompts in App oder Build integrieren | Geprüfte Fähigkeiten; App enthält keinen Prompt-Katalog |
 | **8** | Kleine Modelle (Lokal) | Geräteprüfung, Katalog (GGUF ≤ 4 GB), Download mit Fortsetzen, **Grafik (Vulkan) → Prozessor → NPU**, Selbsttest + Begründung | Bestes Modell läuft offline; Auswahl begründet; Ladebalken voll |
 | **9** | NPU-Forschung | LiteRT-Samsung-Backend, Samsung Neural SDK, Messliste (Wörter/s, Zeit, RAM, Wärme, Abstürze), Brücke über 20130 | Schriftliches Ergebnis je Weg; bei Misserfolg ehrliche Lücke |
 | **10** | Absicherung + Veröffentlichung | 4 Absicherungen scharf, Anti-Slop-Prüfer, README/Releases, Bau im Internet, Code-Hygiene, Werkzeug-Räumung | Jeder Meilenstein: Release mit APK; README ehrlich; Build grün |

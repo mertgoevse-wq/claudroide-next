@@ -33,7 +33,6 @@ interface ChatStreamTransport {
         descriptor: ProviderDescriptor,
         modelId: String,
         messages: List<org.claudroide.app.feature.provider.ChatMessage>,
-        system: String? = null,
         maxTokens: Int = 1024,
     ): Flow<SseEvent>
 }
@@ -181,7 +180,6 @@ class ChatViewModel @JvmOverloads constructor(
                     descriptor = descriptor,
                     modelId = state.currentModelId,
                     messages = history,
-                    system = state.systemPrompt,
                     maxTokens = 1024
                 ).collect { event ->
                     engine.accept(event)
@@ -250,8 +248,6 @@ class ChatViewModel @JvmOverloads constructor(
             messages = emptyList(),
             conversationId = generateConversationId(),
             streamState = StreamState.IDLE,
-            activePromptTitle = null,
-            systemPrompt = null,
             error = null,
         )
     }
@@ -277,8 +273,6 @@ class ChatViewModel @JvmOverloads constructor(
                     messages = state.messages.map { it.text },
                     timestamp = System.currentTimeMillis(),
                     streamState = state.streamState,
-                    activePromptTitle = state.activePromptTitle,
-                    systemPrompt = state.systemPrompt
                 )
             )
             val sessions = runCatching { sessionStore.sessions() }.getOrDefault(emptyList())
@@ -355,8 +349,6 @@ class ChatViewModel @JvmOverloads constructor(
             streamState = session.streamState.takeUnless {
                 it == StreamState.CONNECTING || it == StreamState.RECEIVING
             } ?: StreamState.ABORTED,
-            activePromptTitle = session.activePromptTitle,
-            systemPrompt = session.systemPrompt,
             error = null,
         )
     }
@@ -403,23 +395,6 @@ class ChatViewModel @JvmOverloads constructor(
         )
     }
 
-    fun onPromptSelected(title: String, content: String) {
-        val state = _uiState.value
-        if (state.isStreaming) {
-            _uiState.value = state.copy(error = "Stoppe zuerst die laufende Antwort, bevor du die Rolle wechselst.")
-            return
-        }
-        if (title.isBlank() || content.isBlank()) {
-            _uiState.value = state.copy(error = "Die ausgewählte Rolle konnte nicht geladen werden.")
-            return
-        }
-        _uiState.value = state.copy(
-            activePromptTitle = title,
-            systemPrompt = content,
-            error = null,
-        )
-        persistSession()
-    }
 }
 
 data class ChatUiState(
@@ -432,8 +407,6 @@ data class ChatUiState(
     val conversationId: String = generateConversationId(),
     val error: String? = null,
     val lastUsage: TokenUsage? = null,
-    val activePromptTitle: String? = null,
-    val systemPrompt: String? = null,
     val recentSessions: List<RecentSession> = emptyList(),
     val showAttachmentSheet: Boolean = false,
     val showModelDialog: Boolean = false,

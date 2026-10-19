@@ -109,7 +109,7 @@
 |---|---|---|---|---|---|---|
 | **7.1** | Fähigkeiten-Katalog | Metadaten-Katalog, Laden nur bei Bedarf; je Eintrag Trigger, Zweck, benötigte Rechte, Kontextkosten | 2.8 | Katalog sichtbar; Fähigkeit wird erst bei passender Aufgabe ganz geladen | `design-skill-library` (Muster), `feature/skills` | Kontext-Überlauf → Beschreibungen kurz halten |
 | **7.2** | MCP-Anbindung | Lokal (stdio) und über Netz; Server brauchen Freigabe; Aufrufe protokolliert | 7.1 | Ein MCP-Server angeschlossen und benutzt | `feature/mcp/*`, `claude-media-bridge` | Fremder Server → Freigabe + Protokoll |
-| **7.3** | Prompt-Pipeline | Erkennen → auswählen → kombinieren → anpassen → dokumentieren | 7.1 | Auswahl im Zustand nachvollziehbar | `awesome-prompts` (377 Prompts) | Wahlloses Importieren → verboten |
+| **7.3** | Externe Prompt-Arbeitsrollen | Passende externe Rollen für die jeweilige Aufgabe auswählen und anwenden, ohne Prompts in App/Build zu übernehmen | 7.1 | Produktdateien und APK enthalten keinen Prompt-Katalog; externe Rollen bleiben außerhalb des Produkts | Externe Rollen, nur für den Arbeitsablauf | Einbetten in App oder Build → verboten |
 | **7.4** | Sicherheitsprüfung für Zusatzquellen | Herkunft, Lizenz, Stand, Sicherheitsbefund je Eintrag; bei Gefahr fragen | 7.1 | Kein Eintrag ohne Befund | `SkillSupplyChainReview` | Fremdcode → Herkunftszeile |
 | **7.5** | Unbekanntere Quellen suchen (Auftrag) | Gründliche Suche nach wenig bekannten, passenden Projekten; schriftliche Liste mit Umgang je Fund | 0.2 | Liste liegt vor, auch wenn sie Zeit kostet | `design-skill-library`-Methode | Massenware → Anti-Slop-Tor |
 

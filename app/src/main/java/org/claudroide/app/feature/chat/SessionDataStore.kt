@@ -31,8 +31,6 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
         val MESSAGES = stringPreferencesKey("messages_json")
         val TIMESTAMP = longPreferencesKey("timestamp")
         val STREAM_STATE = stringPreferencesKey("stream_state")
-        val ACTIVE_PROMPT_TITLE = stringPreferencesKey("active_prompt_title")
-        val SYSTEM_PROMPT = stringPreferencesKey("system_prompt")
         val SESSIONS = stringPreferencesKey("sessions_json")
         val AGENT_STATE = stringPreferencesKey("agent_state_json")
         val TOOL_CALLS = stringPreferencesKey("tool_calls_json")
@@ -54,17 +52,13 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
             prefs[Keys.MESSAGES] = messagesToJson(record.messages)
             prefs[Keys.TIMESTAMP] = record.timestamp
             prefs[Keys.STREAM_STATE] = record.streamState.name
-            if (record.activePromptTitle == null || record.systemPrompt == null) {
-                prefs.remove(Keys.ACTIVE_PROMPT_TITLE)
-                prefs.remove(Keys.SYSTEM_PROMPT)
-            } else {
-                prefs[Keys.ACTIVE_PROMPT_TITLE] = record.activePromptTitle
-                prefs[Keys.SYSTEM_PROMPT] = record.systemPrompt
-            }
+            prefs.remove(stringPreferencesKey("active_prompt_title"))
+            prefs.remove(stringPreferencesKey("system_prompt"))
         }
     }
 
     override suspend fun sessions(limit: Int): List<SessionRecord> = try {
+        removePersistedPromptData()
         val preferences = context.dataStore.data
             .catch { e ->
                 if (e is IOException) emit(emptyPreferences()) else throw e
@@ -131,6 +125,17 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
         }
     }
 
+    private suspend fun removePersistedPromptData() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(stringPreferencesKey("active_prompt_title"))
+            prefs.remove(stringPreferencesKey("system_prompt"))
+            prefs[Keys.SESSIONS]?.let { json ->
+                val migrated = removePromptFieldsFromSessionsJson(json)
+                if (migrated != json) prefs[Keys.SESSIONS] = migrated
+            }
+        }
+    }
+
     // -- JSON serialization --
 
     private fun sessionsToJson(sessions: List<SessionRecord>): String = JSONArray().apply {
@@ -142,8 +147,6 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
                 put("messages", JSONArray(record.messages))
                 put("timestamp", record.timestamp)
                 put("streamState", record.streamState.name)
-                put("activePromptTitle", record.activePromptTitle)
-                put("systemPrompt", record.systemPrompt)
             })
         }
     }.toString()
@@ -161,8 +164,6 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
                 streamState = runCatching {
                     org.claudroide.app.feature.provider.network.StreamState.valueOf(obj.getString("streamState"))
                 }.getOrDefault(org.claudroide.app.feature.provider.network.StreamState.IDLE),
-                activePromptTitle = obj.optString("activePromptTitle").takeIf(String::isNotBlank),
-                systemPrompt = obj.optString("systemPrompt").takeIf(String::isNotBlank),
             )
         }
     }
@@ -185,8 +186,6 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
             messages = messages,
             timestamp = timestamp,
             streamState = streamState,
-            activePromptTitle = prefs[Keys.ACTIVE_PROMPT_TITLE],
-            systemPrompt = prefs[Keys.SYSTEM_PROMPT],
         )
     }
 
@@ -293,6 +292,17 @@ class SessionDataStore(private val context: Context) : SessionPersistence {
     }
 }
 
+internal fun removePromptFieldsFromSessionsJson(json: String): String {
+    val sessions = JSONArray(json)
+    for (index in 0 until sessions.length()) {
+        sessions.getJSONObject(index).apply {
+            remove("activePromptTitle")
+            remove("systemPrompt")
+        }
+    }
+    return sessions.toString()
+}
+
 /** Persistence contract for chat sessions. */
 interface SessionPersistence {
     suspend fun save(record: SessionRecord)
@@ -317,9 +327,7 @@ data class SessionRecord(
     val modelId: String,
     val messages: List<String>,
     val timestamp: Long,
-    val streamState: org.claudroide.app.feature.provider.network.StreamState = org.claudroide.app.feature.provider.network.StreamState.IDLE,
-    val activePromptTitle: String? = null,
-    val systemPrompt: String? = null
+    val streamState: org.claudroide.app.feature.provider.network.StreamState = org.claudroide.app.feature.provider.network.StreamState.IDLE
 )
 
 /** Agent runtime state for recovery. */

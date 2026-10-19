@@ -26,7 +26,7 @@ Die Architektur folgt dem Prinzip **vertikaler Scheiben**: Jeder Funktionsbereic
 | 8 | **Files / Projects** | Projekt-Explorer, Datei-Browser, Code-View, Diff, Search | `feature/project` erweitern |
 | 9 | **Git** | Diffs, Commits, Log, Konflikte, GitHub-Sync (privat, AUS per Default) | `feature/git` |
 | 10 | **Shell / Process Runtime** | Leichte Shell + PRoot-Container (portiert aus `feature/linux`) | §5.3; `claude-code-android` Engine-Technik |
-| 11 | **Skills / Plugins / MCP / Prompts** | Kataloge, Progressive Disclosure, Awesome-Prompts-Pipeline | §7; `design-skill-library` Muster |
+| 11 | **Skills / Plugins / MCP** | geprüfte Fähigkeiten, Progressive Disclosure; externe Prompt-Arbeitsrollen sind kein App-Modul | §7; `design-skill-library` Muster |
 | 12 | **Session Manager** | Session-/Task-State, Wiederaufnahme (`WEITERARBEITEN`), Checkpoints | `claudroide-resume` Skill, `lokicode` Memory |
 | 13 | **Device Agent** | AccessibilityService, Gesten, Screenshot, See→Decide→Act→Verify, Not-Aus, Sperrliste | §6; `clawscreen` Verfahren, `~/claudroide/feature/control` |
 | 14 | **Media Runtime** | Bilder, Audio, MIDI, Video, Dokumente verstehen/erzeugen; MCP-Anbindung | §1.1; `claude-media-bridge` (SPÄTER) |

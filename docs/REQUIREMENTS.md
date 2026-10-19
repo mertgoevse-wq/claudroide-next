@@ -89,7 +89,7 @@ Diese Anforderungen sind **zwingend** für die Definition von „v1 fertig" (§1
 |---|---|---|
 | R-9.1 | Weitere Provider: Groq, Mistral, NVIDIA NIM, Bynara, Ollama Cloud, Orcarouter, Fastrouter | Jeder Provider getestet; Wire-Format-basiert, kein neuer Code |
 | R-9.2 | DroidRoute als optionaler Custom-Provider (nach frischer Standserhebung) | Integration nur wenn Nutzer will; Provider-Abstraktion erlaubt es |
-| R-9.3 | Skills/Plugins/MCP/Prompt-Kataloge (Progressive Disclosure, §7) | Katalog sichtbar; Fähigkeit wird erst bei passender Aufgabe ganz geladen |
+| R-9.3 | Skills/Plugins/MCP werden schrittweise geladen; passende externe Prompt-Arbeitsrollen bleiben außerhalb des Produkts | App und APK enthalten keinen Awesome-Prompt-Katalog oder dessen Texte |
 | R-9.4 | Projekte/Dateien/Git vertikal: Browser, Git-UI, GitHub-Sync (privat, AUS per Default) | Commit im Projekt möglich; Secret-Scan blockt Testschlüssel; Vorschau vor Push |
 | R-9.5 | Media Runtime (Bilder, Audio, MIDI, Video, Dokumente) + claude-media-bridge | Erzeugung + Verständnis; MCP-Anbindung |
 | R-9.6 | Anti-Slop-Prüfung im Lauf (Textprüfer gegen Werbesprache, erfundene Zahlen, Emoji-Wolken) | Prüfer findet eingebauten Testfall |

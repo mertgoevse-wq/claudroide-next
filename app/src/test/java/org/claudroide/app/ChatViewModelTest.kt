@@ -128,13 +128,11 @@ class ChatViewModelTest {
     }
 
     @Test
-    fun selectingSavedConversation_restoresItsTranscriptAndAgentRole() = runTest {
+    fun selectingSavedConversation_restoresItsTranscriptAndProvider() = runTest {
         val store = InMemorySessionStore()
         store.save(
             SessionRecord(
                 "second-chat", "openrouter", "selected-model", listOf("review this", "Looks good"), 1L,
-                activePromptTitle = "Security Reviewer",
-                systemPrompt = "Review for security issues.",
             )
         )
         val vm = ChatViewModel(keyVault = FakeKeyVault(), sessionStore = store)
@@ -147,8 +145,6 @@ class ChatViewModelTest {
         assertFalse(vm.uiState.value.messages[1].fromUser)
         assertEquals("openrouter", vm.uiState.value.currentProviderId)
         assertEquals("selected-model", vm.uiState.value.currentModelId)
-        assertEquals("Security Reviewer", vm.uiState.value.activePromptTitle)
-        assertEquals("Review for security issues.", vm.uiState.value.systemPrompt)
     }
 
     @Test
@@ -194,57 +190,6 @@ class ChatViewModelTest {
         assertTrue(recent.preview.contains("[REDACTED]"))
     }
 
-    @Test
-    fun selectingPrompt_setsSystemRoleWithoutChangingUserInput() = runTest {
-        val vm = ChatViewModel(keyVault = FakeKeyVault())
-        vm.onInputChange("Please review this project")
-
-        vm.onPromptSelected("Security Reviewer", "Review code for vulnerabilities.")
-
-        assertEquals("Please review this project", vm.uiState.value.input.text)
-        assertEquals("Security Reviewer", vm.uiState.value.activePromptTitle)
-        assertEquals("Review code for vulnerabilities.", vm.uiState.value.systemPrompt)
-    }
-
-    @Test
-    fun selectingPrompt_persistsSystemRoleForSessionRestore() = runTest {
-        val savedRecords = mutableListOf<org.claudroide.app.feature.chat.SessionRecord>()
-        val sessionStore = object : org.claudroide.app.feature.chat.SessionPersistence {
-            override suspend fun save(record: org.claudroide.app.feature.chat.SessionRecord) {
-                savedRecords += record
-            }
-
-            override suspend fun lastSession(): org.claudroide.app.feature.chat.SessionRecord? = null
-        }
-        val vm = ChatViewModel(keyVault = FakeKeyVault(), sessionStore = sessionStore)
-
-        vm.onPromptSelected("Security Reviewer", "Review code for vulnerabilities.")
-
-        assertEquals("Security Reviewer", savedRecords.last().activePromptTitle)
-        assertEquals("Review code for vulnerabilities.", savedRecords.last().systemPrompt)
-    }
-
-    @Test
-    fun selectingBlankPrompt_isRejected() = runTest {
-        val vm = ChatViewModel(keyVault = FakeKeyVault())
-        vm.onPromptSelected("", " ")
-
-        assertNull(vm.uiState.value.activePromptTitle)
-        assertNull(vm.uiState.value.systemPrompt)
-        assertNotNull(vm.uiState.value.error)
-    }
-
-    @Test
-    fun newConversation_clearsSelectedSystemRole() = runTest {
-        val vm = ChatViewModel(keyVault = FakeKeyVault())
-        vm.onPromptSelected("Compose Architect", "Use Compose best practices.")
-
-        vm.newConversation()
-
-        assertNull(vm.uiState.value.activePromptTitle)
-        assertNull(vm.uiState.value.systemPrompt)
-    }
-
     // ── Provider selection ─────────────────────────────────────────────────────
 
     @Test
@@ -263,30 +208,25 @@ class ChatViewModelTest {
     }
 
     @Test
-    fun providerAndPromptSelection_areRejectedDuringStreaming() = runTest {
+    fun providerSelection_isRejectedDuringStreaming() = runTest {
         val heldStream = kotlinx.coroutines.CompletableDeferred<Unit>()
-        var requestSystemPrompt: String? = null
         var requestProvider = ""
         val transport = object : org.claudroide.app.feature.chat.ChatStreamTransport {
             override fun streamRequest(
                 descriptor: ProviderDescriptor,
                 modelId: String,
                 messages: List<ProviderChatMessage>,
-                system: String?,
                 maxTokens: Int,
             ): Flow<SseEvent> = flow {
-                requestSystemPrompt = system
                 requestProvider = descriptor.providerId
                 heldStream.await()
             }
         }
         val vm = ChatViewModel(keyVault = FakeKeyVault(), transport = transport)
-        vm.onPromptSelected("Current role", "Keep this role")
         vm.onInputChange("Hold the stream")
         vm.sendMessage()
         runCurrent()
         assertTrue(vm.uiState.value.isStreaming)
-        assertEquals("Keep this role", requestSystemPrompt)
         assertEquals("anthropic", requestProvider)
 
         vm.onProviderSelected("openrouter", "other-model")
@@ -294,9 +234,6 @@ class ChatViewModelTest {
         assertEquals("claude-sonnet-5-5", vm.uiState.value.currentModelId)
         assertNotNull(vm.uiState.value.error)
 
-        vm.onPromptSelected("Different role", "Replace the role")
-        assertEquals("Current role", vm.uiState.value.activePromptTitle)
-        assertEquals("Keep this role", vm.uiState.value.systemPrompt)
         assertTrue(vm.uiState.value.isStreaming)
         heldStream.complete(Unit)
         runCurrent()

@@ -125,6 +125,21 @@ class MainActivityBackHandlerTest {
     }
 
     @Test
+    fun `back press on MediaStudio and CodeMcp navigates back to Chat`() {
+        for (dest in listOf(AppDestination.MEDIA_STUDIO, AppDestination.CODE_MCP, AppDestination.ARTIFACTS)) {
+            val coordinator = BackNavigationCoordinator(
+                showAttachmentSheet = false,
+                showModelDialog = false,
+                isDrawerOpen = false,
+                currentDestination = dest
+            )
+            val action = coordinator.handleBackPress()
+            assertEquals(BackNavigationCoordinator.BackAction.NavigateTo(AppDestination.CHAT), action)
+            assertEquals(AppDestination.CHAT, coordinator.currentDestination)
+        }
+    }
+
+    @Test
     fun `back press on Root Chat screen delegates to system back`() {
         val coordinator = BackNavigationCoordinator(
             showAttachmentSheet = false,

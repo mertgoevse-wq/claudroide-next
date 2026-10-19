@@ -48,6 +48,7 @@
     <string name="nav_drawer_projects">Projekte</string>
     <string name="nav_drawer_code_mcp">Code</string>
     <string name="nav_drawer_artifacts">Artefakte</string>
+    <string name="nav_media_studio">Medien-Studio</string>
     <string name="nav_drawer_recent_chats">Letzte Chats</string>
     <string name="nav_drawer_no_recent">Keine kürzlichen Unterhaltungen</string>
     <string name="nav_drawer_docs">Dokumentation</string>

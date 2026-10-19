@@ -44,6 +44,9 @@ import org.claudroide.app.feature.project.PersistentFolderAccess
 import org.claudroide.app.feature.project.PersistentFolderAccessProvider
 import org.claudroide.app.feature.project.ContentResolverUriAvailability
 import org.claudroide.app.feature.settings.SettingsScreen
+import org.claudroide.app.feature.agent.CodeMcpScreen
+import org.claudroide.app.feature.media.MediaStudioScreen
+import org.claudroide.app.feature.artifacts.ArtifactsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -189,6 +192,17 @@ fun AppShell() {
                     onNavigationClick = { scope.launch { drawerState.open() } },
                 )
                 AppDestination.PROJECTS -> ProjectScreen()
+                AppDestination.CODE_MCP -> CodeMcpScreen(
+                    onBackClick = { currentDestination = AppDestination.CHAT },
+                    chatState = chatUiState,
+                )
+                AppDestination.MEDIA_STUDIO -> MediaStudioScreen(
+                    onBackClick = { currentDestination = AppDestination.CHAT }
+                )
+                AppDestination.ARTIFACTS -> ArtifactsScreen(
+                    onBackClick = { currentDestination = AppDestination.CHAT },
+                    onNavigateToMediaStudio = { currentDestination = AppDestination.MEDIA_STUDIO }
+                )
                 AppDestination.SETTINGS -> SettingsScreen()
             }
         }

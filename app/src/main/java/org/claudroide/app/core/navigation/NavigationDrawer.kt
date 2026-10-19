@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Description
@@ -38,6 +39,9 @@ enum class AppDestination(
 ) {
     CHAT(Icons.Default.ChatBubbleOutline, R.string.nav_chat),
     PROJECTS(Icons.Default.Folder, R.string.nav_projects),
+    CODE_MCP(Icons.Default.Code, R.string.nav_drawer_code_mcp),
+    MEDIA_STUDIO(Icons.Default.AutoFixHigh, R.string.nav_media_studio),
+    ARTIFACTS(Icons.Default.Description, R.string.nav_drawer_artifacts),
     SETTINGS(Icons.Default.Settings, R.string.nav_settings),
 }
 
@@ -129,18 +133,27 @@ fun NavigationDrawer(
             DrawerNavigationRow(
                 icon = Icons.Default.Code,
                 label = stringResource(R.string.nav_drawer_code_mcp),
-                selected = false,
+                selected = currentDestination == AppDestination.CODE_MCP,
                 onClick = {
-                    onCodeMcpClick()
+                    onDestinationClick(AppDestination.CODE_MCP)
+                    onClose()
+                },
+            )
+            DrawerNavigationRow(
+                icon = Icons.Default.AutoFixHigh,
+                label = stringResource(R.string.nav_media_studio),
+                selected = currentDestination == AppDestination.MEDIA_STUDIO,
+                onClick = {
+                    onDestinationClick(AppDestination.MEDIA_STUDIO)
                     onClose()
                 },
             )
             DrawerNavigationRow(
                 icon = Icons.Default.Description,
                 label = stringResource(R.string.nav_drawer_artifacts),
-                selected = false,
+                selected = currentDestination == AppDestination.ARTIFACTS,
                 onClick = {
-                    onArtifactsClick()
+                    onDestinationClick(AppDestination.ARTIFACTS)
                     onClose()
                 },
             )
